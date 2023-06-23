@@ -13,6 +13,7 @@
 #include <math.h>
 
 //teste teste
+//teste 2
 
 void menu(FILE *func, FILE *clien, FILE *equip){
     system("cls");
