@@ -11,7 +11,7 @@
 #include <stdarg.h>
 #include <time.h>
 #include <math.h>
-
+//
 void menu(FILE *func, FILE *clien, FILE *equip){
     system("cls");
     printf("**********************************************\n");
