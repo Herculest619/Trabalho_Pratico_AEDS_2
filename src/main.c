@@ -12,7 +12,7 @@
 #include <time.h>
 #include <math.h>
 
-//teste
+//teste teste
 
 void menu(FILE *func, FILE *clien, FILE *equip){
     system("cls");
