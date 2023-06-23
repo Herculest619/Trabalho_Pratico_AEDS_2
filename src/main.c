@@ -12,8 +12,6 @@
 #include <time.h>
 #include <math.h>
 
-    //teste 2
-
 void menu(FILE *func, FILE *clien, FILE *equip){
     system("cls");
     printf("**********************************************\n");
