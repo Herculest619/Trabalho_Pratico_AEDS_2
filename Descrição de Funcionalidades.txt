@@ -1,0 +1,7 @@
+Turma 11: Hercules Teixeira e Victor Drumond:
+
+Aplicação para gerenciamento de uma empresa de internet:
+
+Entidades: cliente, funcionário, serviços, equipamentos.
+
+Operações: Buscar/Cadastrar (clientes, serviços, equipamentos, funcionários) 
