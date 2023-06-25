@@ -6,8 +6,6 @@
 #include <stdarg.h>
 #include <time.h>
 #include <math.h>
-#define MAX_NOMES_FUNC 100
-#define MAX_TAM_NOME_FUNC 50
 
 // imprime_funcionario funcionario
 void imprime_funcionario(TFunc *func)
@@ -140,7 +138,7 @@ void insere_n_funcionarios_ordenados(FILE *out)
         gerarCPF(cpf, i);
         char data[11];
         gerarData(data, i);
-        char nome[MAX_TAM_NOME_FUNC];
+        char nome[MAX_TAM_NOME];
         gerarNome(nome, i);
         TFunc *f1 = funcionario(i, nome, cpf, data, gerarSalario(i));
         salva_funcionario(f1, out);
@@ -186,7 +184,7 @@ void insere_n_funcionarios_desordenados_funcionario(FILE *out)
         gerarCPF(cpf, indices[i]);
         char data[11];
         gerarData(data, indices[i]);
-        char nome[MAX_TAM_NOME_FUNC];
+        char nome[MAX_TAM_NOME];
         gerarNome(nome, indices[i]);
         TFunc *f1 = funcionario(indices[i], nome, cpf, data, gerarSalario(indices[i]));
         salva_funcionario(f1, out);
@@ -207,7 +205,7 @@ double gerarSalario(int i)
 
 void gerarNome(char *nome, int i)
 {
-    const char *nomes[MAX_NOMES_FUNC] =
+    const char *nomes[MAX_NOMES] =
     {
         "Maria", "Joao", "Ana", "Jose", "Antonio",
         "Francisco", "Carlos", "Paula", "Marcia", "Luis",
@@ -233,10 +231,10 @@ void gerarNome(char *nome, int i)
 
     // Gera um índice aleatório para selecionar um nome da lista
     srand(time(NULL));
-    int indice = (rand() + i) % MAX_NOMES_FUNC;
+    int indice = (rand() + i) % MAX_NOMES;
 
     // Copia o nome selecionado para o parâmetro de saída
-    snprintf(nome, MAX_TAM_NOME_FUNC, "%s", nomes[indice]);
+    snprintf(nome, MAX_TAM_NOME, "%s", nomes[indice]);
 }
 
 void gerarData(char *data, int i)

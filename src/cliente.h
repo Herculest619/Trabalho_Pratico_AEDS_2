@@ -15,9 +15,18 @@ typedef struct {
     char cpf[15];
     char data_nascimento[11];
     double mensalidade;
-    char plano[20];
-} cliente;
+} Tclien;
 
 void menuInicialCliente(FILE *clien);
+
+void menuCriarBaseCliente(FILE *clien);
+
+void criarBaseClientesOrdenada(FILE *clien);
+
+Tclien *cliente(int cod, char *nome, char *cpf, char *data, double mensalidade);
+
+void salva_cliente(Tclien *clien, FILE *clien_file);
+
+double gerarMensalidade(int i);
 
 #endif // CLIENTE_H
