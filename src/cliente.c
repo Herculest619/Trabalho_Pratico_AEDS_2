@@ -378,56 +378,11 @@ int tamanho_total_cliente(FILE *in)
     return i;
 }
 
-/*void menuOrdenarCliente(FILE *out)
-{
-    printf("-----ORDENAR BASE-----\n");
-    printf("1: ORDENACAO EM DISCO\n");
-    //printf("2: ORDENACAO EM RAM\n");
-    printf("9: VOLTAR\n");
-    printf("0: EXIT\n");
-    printf("---------------------\n\n");
-    printf("DIGITE A OPCAO DESEJADA: ");
-
-    int opcao;
-    scanf("%d", &opcao);
-
-    switch (opcao)
-    {
-    case 1:
-        system("cls");
-
-
-        menu_ordenacao_cliente_disco(out);
-
-        break;*/
-
-    /*case 2:
-
-        system("cls");
-        printf("ORDENANDO BASE EM RAM USANDO CLASSIFICACAO INTERNA....\n");
-
-        classificacao_interna(out);
-
-        menuInicial(out);
-        break;*/
-
-/*    case 9:
-        system("cls");
-        menuInicialCliente(out);
-        break;
-
-    default:
-        system("cls");
-        printf("\n-----EXIT-----\n");
-    }
-}*/
-
 void menuOrdenarCliente(FILE *out)
 {
     printf("-----ORDENAR BASE-----\n");
     printf("1: INSERTION SORT\n");
     printf("2: SELECTION SORT\n");
-    //printf("3: MERGE SORT\n");
     printf("9: VOLTAR\n");
     printf("0: EXIT\n");
     printf("---------------------\n\n");

@@ -53,6 +53,4 @@ void insertion_sort_disco_cliente(FILE *arq);
 
 void selection_sort_disco_cliente(FILE *arq);
 
-
-
 #endif // CLIENTE_H
