@@ -199,7 +199,7 @@ double gerarSalario(int i)
     double salarioMinimo = 1320.00; // Valor do salário mínimo no Brasil em 2021
     double salarioMaximo = 30000.00;
 
-    double salario = salarioMinimo + ((double)(rand() + i) / RAND_MAX) * (salarioMaximo - salarioMinimo);
+    double salario = salarioMinimo + ((double)(rand() * i) / RAND_MAX) * (salarioMaximo - salarioMinimo);
     return salario;
 }
 
