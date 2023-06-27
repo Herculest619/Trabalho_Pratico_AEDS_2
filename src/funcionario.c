@@ -826,7 +826,7 @@ void le_funcionarios(FILE *in)
         free(f);
     }
 }
-//sfsf
+
 void adiciona_funcionario(FILE *in)
 {
     printf("\n\nAdicionando funcionário no final do arquivo...\n\n");
