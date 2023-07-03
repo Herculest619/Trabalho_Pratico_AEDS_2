@@ -143,6 +143,12 @@ void insertion_sort_disco_equipamento(FILE *arq){
         //printf("*** Salvando equipamento %d na posicao %d\n", fj->cod, i+1);
         //salva registro j na posiÃ§Ã£o i
         salvaEquipamento(fj, arq);
+        if (fi != NULL) {
+            free(fi);
+        }
+        if (fj != NULL) {
+            free(fj);
+        }
     }
     printf("\nForam gastas %d iteracoes para ordenar!\n", cont);
     //descarrega o buffer para ter certeza que dados foram gravados
@@ -184,6 +190,7 @@ void selection_sort_discos_equipamento(FILE *arq){
                 fi = leEquip(arq);
                 //printf("fi = %d\n", fi->cod);
                 cont++;
+                free(fmin);
             }
             free(fj);
         }

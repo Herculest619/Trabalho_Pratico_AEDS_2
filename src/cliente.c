@@ -467,6 +467,12 @@ void insertion_sort_disco_cliente(FILE *arq)
         //printf("*** salva_cliente cliente %d na posicao %d\n", fj->cod, i+1);
         //salva_cliente registro j na posiÃ§Ã£o i
         salva_cliente(fj, arq);
+        if (fi != NULL) {
+            free(fi);
+        }
+        if (fj != NULL) {
+            free(fj);
+        }
     }
     printf("\nForam gastas %d iteracoes para ordenar!\n", cont);
     //descarrega o buffer para ter certeza que dados foram gravados
@@ -510,6 +516,7 @@ void selection_sort_disco_cliente(FILE *arq)
                 fi = ler(arq);
                 //printf("fi = %d\n", fi->cod);
                 cont++;
+                free(fmin);
             }
             free(fj);
         }

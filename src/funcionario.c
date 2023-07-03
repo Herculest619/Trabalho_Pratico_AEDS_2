@@ -717,6 +717,7 @@ void selection_sort_disco_funcionario(FILE *arq){
                 fi = le(arq);
                 //printf("fi = %d\n", fi->cod);
                 cont++;
+                free(fmin);
             }
             free(fj);
         }
@@ -759,6 +760,12 @@ void insertion_sort_disco_funcionario(FILE *arq)
         //printf("*** salva_funcionariondo funcionario %d na posicao %d\n", fj->cod, i+1);
         //salva_funcionario registro j na posiÃ§Ã£o i
         salva_funcionario(fj, arq);
+        if (fi != NULL) {
+            free(fi);
+        }
+        if (fj != NULL) {
+            free(fj);
+        }
     }
     printf("\nForam gastas %d iteracoes para ordenar!\n", cont);
     //descarrega o buffer para ter certeza que dados foram gravados
