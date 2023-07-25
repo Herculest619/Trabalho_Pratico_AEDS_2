@@ -81,6 +81,10 @@ void insertion_sort_memoria_funcionario(FILE *arq);
 
 void menuInicialFuncionario(FILE *out);
 
-void junta_particoes(int qnt_part, char nome_arq[]);
+void selececao_por_substituicao_func(TFunc *arr, int size);
+
+void criar_particoes_func(FILE *out);
+
+void intercalacao_otima_func(int qnt_part, const char *nome_base);
 
 #endif //FUNCIONARIO_H

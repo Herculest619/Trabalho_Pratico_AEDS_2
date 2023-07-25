@@ -452,7 +452,7 @@ void menu_ordenacao_funcionario(FILE *out)
 {
     printf("-----ORDENAR BASE-----\n");
     printf("1: ORDENACAO EM DISCO\n");
-    //printf("2: ORDENACAO EM RAM\n");
+    printf("2: ORDENACAO EM RAM (PARTICOES)\n");
     printf("9: VOLTAR\n");
     printf("0: EXIT\n");
     printf("---------------------\n\n");
@@ -466,20 +466,19 @@ void menu_ordenacao_funcionario(FILE *out)
     case 1:
         system("cls");
 
-
         menu_ordenacao_funcionario_disco(out);
 
         break;
 
-    /*case 2:
+    case 2:
 
         system("cls");
-        printf("ORDENANDO BASE EM RAM USANDO CLASSIFICACAO INTERNA....\n");
+        printf("CRIANDO PARTICOES....\n");
 
-        classificacao_interna(out);
+        criar_particoes_func(out);
 
-        menuInicial(out);
-        break;*/
+        menuInicialFuncionario(out);
+        break;
 
     case 9:
         system("cls");
@@ -598,18 +597,23 @@ void menuCriarBaseFuncioarios(FILE *out)
     }
 }
 
-void classificacao_interna(FILE *arq)
+void criar_particoes_func(FILE *arq)
 {
     int tam = tamanho_total_funcionario(arq);
     float tam_part;
     int qnt_part;
 
-    printf("\nDigite o tamanho de particoes: ");
+    printf("\nDigite o tamanho de particoes (MAX = %d): ", tam);
     scanf("%f", &tam_part);
 
     if(tam_part > tam){
         printf("\nNao e possivel criar uma particao maior que o tamanho total da base.\n\n");
-        classificacao_interna(arq);
+        criar_particoes_func(arq);
+
+    }else if(tam_part <= 0){
+        printf("\nNao e possivel criar uma particao com o tamanho igual ou menor a 0.\n\n");
+        criar_particoes_func(arq);
+
     }
 
     qnt_part = (int)ceil(tam / tam_part);
@@ -649,36 +653,110 @@ void classificacao_interna(FILE *arq)
             fseek(arq, inicio * sizeof(TFunc), SEEK_SET);
             fread(particao_temp, sizeof(TFunc), fim - inicio, arq);
 
-            // Ordenação da partição em RAM (exemplo: uso do algoritmo Bubble Sort)
-            for (int j = 0; j < fim - inicio - 1; j++)
-            {
-                for (int k = 0; k < fim - inicio - j - 1; k++)
-                {
-                    if (particao_temp[k].cod > particao_temp[k + 1].cod)
-                    {
-                        TFunc temp = particao_temp[k];
-                        particao_temp[k].cod = particao_temp[k + 1].cod;
-                        particao_temp[k + 1].cod = temp.cod;
-                    }
-                }
-            }
+            // Ordenação da partição em RAM usando a Seleção por substituição
+            selececao_por_substituicao_func(particao_temp, fim - inicio);
 
             fwrite(particao_temp, sizeof(TFunc), fim - inicio, particao);
 
-            //printf("\nParticao %d \n", i);
-            //le_funcionarios(particao);
+            printf("\nParticao %d \n", i);
+            le_funcionarios(particao);
 
             // Fechamento do arquivo da partição
             fclose(particao);
         }
     }
     free(particao_temp);
-    //junta_particoes(qnt_part, "particao-%02d.dat");
+
+    printf("\n-----INTERCALANDO PARTICOES COM INTERCALACAO OTIMA-----\n");
+    intercalacao_otima_func(qnt_part, "funcionarios_ordenados.dat");
 }
 
-void junta_particoes(int qnt_part, char nome_arq[]){
-    qnt_part = qnt_part; //so pra sair o warning
-    nome_arq = nome_arq; //so pra sair o warning
+void intercalacao_otima_func(int qnt_part, const char *nome_base)
+{
+    // Abre o arquivo de saída para a intercalação final
+    FILE *saida;
+    if ((saida = fopen(nome_base, "w+b")) == NULL) {
+        printf("Erro ao abrir arquivo de saida\n");
+        exit(1);
+    }
+
+    // Abre os arquivos das partições para leitura e intercalação
+    FILE **particoes = malloc(sizeof(FILE *) * qnt_part);
+    for (int i = 1; i <= qnt_part; i++) {
+        char nome_particao[16];
+        sprintf(nome_particao, "particao-%02d.dat", i);
+
+        if ((particoes[i - 1] = fopen(nome_particao, "rb")) == NULL) {
+            printf("Erro ao abrir arquivo de particao %d\n", i);
+            exit(1);
+        }
+    }
+
+    // Array para armazenar temporariamente o próximo registro de cada partição
+    TFunc *registro_atual = malloc(sizeof(TFunc) * qnt_part);
+
+    // Leitura inicial do primeiro registro de cada partição
+    for (int i = 0; i < qnt_part; i++) {
+        if (fread(&registro_atual[i], sizeof(TFunc), 1, particoes[i]) != 1) {
+            // Se a partição estiver vazia, coloca um valor máximo no registro para evitar problemas
+            registro_atual[i].cod = INT_MAX;
+        }
+    }
+
+    // Intercalação dos registros até que todas as partições estejam vazias
+    while (1) {
+        // Encontra o menor registro atual dentre todas as partições
+        int menor_indice = -1;
+        for (int i = 0; i < qnt_part; i++) {
+            if (registro_atual[i].cod != INT_MAX && (menor_indice == -1 || registro_atual[i].cod < registro_atual[menor_indice].cod)) {
+                menor_indice = i;
+            }
+        }
+
+        // Se todas as partições estão vazias, a intercalação está completa
+        if (menor_indice == -1) {
+            break;
+        }
+
+        // Escreve o menor registro no arquivo de saída
+        fwrite(&registro_atual[menor_indice], sizeof(TFunc), 1, saida);
+
+        // Lê o próximo registro da partição que tinha o menor registro
+        if (fread(&registro_atual[menor_indice], sizeof(TFunc), 1, particoes[menor_indice]) != 1) {
+            // Se a partição estiver vazia, coloca um valor máximo no registro para evitar problemas
+            registro_atual[menor_indice].cod = INT_MAX;
+        }
+    }
+
+    // Fecha os arquivos das partições e o arquivo de saída
+    for (int i = 0; i < qnt_part; i++) {
+        fclose(particoes[i]);
+    }
+
+    le_funcionarios(saida);
+
+    fclose(saida);
+
+    // Libera a memória alocada
+    free(particoes);
+    free(registro_atual);
+}
+
+void selececao_por_substituicao_func(TFunc *arr, int size) {
+    int i, j, min_idx;
+    for (i = 0; i < size - 1; i++) {
+        min_idx = i;
+        for (j = i + 1; j < size; j++) {
+            if (arr[j].cod < arr[min_idx].cod) {
+                min_idx = j;
+            }
+        }
+        if (min_idx != i) {
+            TFunc temp = arr[i];
+            arr[i] = arr[min_idx];
+            arr[min_idx] = temp;
+        }
+    }
 }
 
 void selection_sort_disco_funcionario(FILE *arq){
