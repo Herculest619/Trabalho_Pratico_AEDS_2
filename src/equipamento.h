@@ -59,4 +59,12 @@ void insertion_sort_disco_equipamento(FILE *arq);
 
 void selection_sort_discos_equipamento(FILE *arq);
 
+void criar_particoes_equip(FILE *arq);
+
+void selececao_por_substituicao_equip(TEquip *arr, int size);
+
+void intercalacao_otima_equip(FILE *arq, int qnt_part, const char *nome_base, float time_used);
+
+void copiar_arquivo_equip(FILE *arq_destino, const char *nome_arquivo_origem);
+
 #endif //EQUIPAMENTO_H

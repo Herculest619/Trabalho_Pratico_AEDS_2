@@ -53,4 +53,14 @@ void insertion_sort_disco_cliente(FILE *arq);
 
 void selection_sort_disco_cliente(FILE *arq);
 
+void menuOrdenarClienteDisco(FILE *out);
+
+void criar_particoes_clien(FILE *arq);
+
+void selececao_por_substituicao_clien(Tclien *arr, int size);
+
+void intercalacao_otima_clien(FILE *arq, int qnt_part, const char *nome_base, float time_used);
+
+void copiar_arquivo_clien(FILE *arq_destino, const char *nome_arquivo_origem);
+
 #endif // CLIENTE_H

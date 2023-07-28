@@ -1,16 +1,16 @@
 #include "funcionario.h"
 #include "main.h"
-#include <string.h>
+#include <math.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
+#include <string.h>
 #include <time.h>
-#include <math.h>
 
 // imprime_funcionario funcionario
 void imprime_funcionario(TFunc *func)
 {
-    printf("**********************************************\n");
+    printf("**********************************************");
     printf("\nFuncionario de codigo ");
     printf("%d", func->cod);
     printf("\nNome: ");
@@ -21,15 +21,17 @@ void imprime_funcionario(TFunc *func)
     printf("%s", func->data_nascimento);
     printf("\nSalario: R$");
     printf("%4.2f", func->salario);
-    printf("\n\n**********************************************");
+    printf("\n**********************************************");
+    printf("\n\n\n");
 }
 
 // Cria funcionario. Lembrar de usar free(func)
 TFunc *funcionario(int cod, char *nome, char *cpf, char *data_nascimento, double salario)
 {
-    TFunc *func = (TFunc *) malloc(sizeof(TFunc));
+    TFunc *func = (TFunc *)malloc(sizeof(TFunc));
     //inicializa espaço de memória com ZEROS
-    if (func) memset(func, 0, sizeof(TFunc));
+    if (func)
+        memset(func, 0, sizeof(TFunc));
     //copia valores para os campos de func
     func->cod = cod;
     strcpy(func->nome, nome);
@@ -54,7 +56,7 @@ void salva_funcionario(TFunc *func, FILE *out)
 // Retorna um ponteiro para funcionario lido do arquivo
 TFunc *le(FILE *in)
 {
-    TFunc *func = (TFunc *) malloc(sizeof(TFunc));
+    TFunc *func = (TFunc *)malloc(sizeof(TFunc));
     if (0 >= fread(&func->cod, sizeof(int), 1, in))
     {
         free(func);
@@ -70,30 +72,30 @@ TFunc *le(FILE *in)
 // Retorna tamanho do funcionario em bytes
 int tamanho()
 {
-    return sizeof(int)  //cod
+    return sizeof(int)         //cod
            + sizeof(char) * 50 //nome
            + sizeof(char) * 15 //cpf
            + sizeof(char) * 11 //data_nascimento
-           + sizeof(double); //salario
+           + sizeof(double);   //salario
 }
 
-TFunc* busca_binaria_funcionario(int cod, FILE *arq, int tam)
+TFunc *busca_binaria_funcionario(int cod, FILE *arq, int tam)
 {
     int count = 0;
     int left = 0, right = tam - 1;
-    while(left <= right)
+    while (left <= right)
     {
         count++;
         int middle = (left + right) / 2;
         fseek(arq, middle * tamanho(), SEEK_SET);
-        TFunc* func = le(arq);
-        if(cod == func->cod)
+        TFunc *func = le(arq);
+        if (cod == func->cod)
         {
             printf("\n**********************************************");
             printf("\nForam gastos %d iteracoes para encontrar o funcionario!\n", count);
             return func;
         }
-        else if(func->cod < cod)
+        else if (func->cod < cod)
         {
             left = middle + 1;
         }
@@ -105,17 +107,17 @@ TFunc* busca_binaria_funcionario(int cod, FILE *arq, int tam)
     return NULL;
 }
 
-TFunc* busca_sequencial_funcionario(int cod, FILE* arq, int tam)
+TFunc *busca_sequencial_funcionario(int cod, FILE *arq, int tam)
 {
     rewind(arq); // Reinicia o ponteiro de arquivo para o início
 
     for (int i = 0; i < tam; i++)
     {
-        TFunc* func = le(arq);
+        TFunc *func = le(arq);
         if (func != NULL && func->cod == cod)
         {
             printf("\n**********************************************");
-            printf("\nForam gastos %d iteracoes para encontrar o funcionario!\n", i+1);
+            printf("\nForam gastos %d iteracoes para encontrar o funcionario!\n", i + 1);
             return func; // Funcionário encontrado
         }
         free(func);
@@ -131,7 +133,7 @@ void insere_n_funcionarios_ordenados(FILE *out)
     scanf("%d", &n);
     printf("\nInserindo %d funcionarios no arquivo...\n", n);
 
-    for(int i=1; i<=n; i++)
+    for (int i = 1; i <= n; i++)
     {
         srand(time(NULL));
         char cpf[15];
@@ -171,7 +173,7 @@ void insere_n_funcionarios_desordenados_funcionario(FILE *out)
     printf("\nInserindo %d funcionarios no arquivo...\n", n);
     printf("\nCONCLUIDO\n");
 
-    int *indices = (int*)malloc(n * sizeof(int));
+    int *indices = (int *)malloc(n * sizeof(int));
     for (int i = 0; i < n; i++)
     {
         indices[i] = i + 1;
@@ -205,29 +207,18 @@ double gerarSalario(int i)
 
 void gerarNome(char *nome, int i)
 {
-    const char *nomes[MAX_NOMES] =
-    {
-        "Maria", "Joao", "Ana", "Jose", "Antonio",
-        "Francisco", "Carlos", "Paula", "Marcia", "Luis",
-        "Fernanda", "Sandra", "Pedro", "Rafael", "Camila",
-        "Bruno", "Diego", "Teresa", "Fabio", "Amanda",
-        "Roberto", "Laura", "Larissa", "Gustavo", "Isabela",
-        "Marcelo", "Ricardo", "Simone", "Rodrigo", "Vitor",
-        "Lucas", "Andre", "Adriana", "Cristina", "Eduardo",
-        "Vanessa", "Carolina", "Fernando", "Valeria", "Silvia",
-        "Hugo", "Fabiana", "Sonia", "Gisele", "Mariana",
-        "Natalia", "Raul", "Luana", "Beatriz", "Camilo",
-        "Vinicius", "Leticia", "Alessandra", "Giovanna", "Glaucio",
-        "Gabriel", "Romulo", "Cecilia", "Samuel", "Renato",
-        "Victor", "Rosa", "Milton", "Leandro", "Bruna",
-        "Marina", "Lucia", "Dalila", "Sara", "Adriano",
-        "Julia", "Simara", "Thiago", "Elisa", "Carla",
-        "Juliana", "Renata", "Raphael", "Daniele", "Larissa",
-        "Luciana", "Alexandre", "Cintia", "Helen", "Marcela",
-        "Priscila", "Bruno", "Patricia", "Caua", "Jessica",
-        "Mariane", "Diana", "Suzana", "Miguel", "Flavia",
-        "Karine", "Cassio"
-    };
+    const char *nomes[MAX_NOMES] = {
+        "Maria",     "Joao",     "Ana",     "Jose",    "Antonio",  "Francisco", "Carlos",   "Paula",      "Marcia",
+        "Luis",      "Fernanda", "Sandra",  "Pedro",   "Rafael",   "Camila",    "Bruno",    "Diego",      "Teresa",
+        "Fabio",     "Amanda",   "Roberto", "Laura",   "Larissa",  "Gustavo",   "Isabela",  "Marcelo",    "Ricardo",
+        "Simone",    "Rodrigo",  "Vitor",   "Lucas",   "Andre",    "Adriana",   "Cristina", "Eduardo",    "Vanessa",
+        "Carolina",  "Fernando", "Valeria", "Silvia",  "Hugo",     "Fabiana",   "Sonia",    "Gisele",     "Mariana",
+        "Natalia",   "Raul",     "Luana",   "Beatriz", "Camilo",   "Vinicius",  "Leticia",  "Alessandra", "Giovanna",
+        "Glaucio",   "Gabriel",  "Romulo",  "Cecilia", "Samuel",   "Renato",    "Victor",   "Rosa",       "Milton",
+        "Leandro",   "Bruna",    "Marina",  "Lucia",   "Dalila",   "Sara",      "Adriano",  "Julia",      "Simara",
+        "Thiago",    "Elisa",    "Carla",   "Juliana", "Renata",   "Raphael",   "Daniele",  "Larissa",    "Luciana",
+        "Alexandre", "Cintia",   "Helen",   "Marcela", "Priscila", "Bruno",     "Patricia", "Caua",       "Jessica",
+        "Mariane",   "Diana",    "Suzana",  "Miguel",  "Flavia",   "Karine",    "Cassio"};
 
     // Gera um índice aleatório para selecionar um nome da lista
     srand(time(NULL));
@@ -255,9 +246,9 @@ void gerarData(char *data, int i)
     case 2: // Fevereiro
         diasNoMes = (ano % 4 == 0 && (ano % 100 != 0 || ano % 400 == 0)) ? 29 : 28;
         break;
-    case 4: // Abril
-    case 6: // Junho
-    case 9: // Setembro
+    case 4:  // Abril
+    case 6:  // Junho
+    case 9:  // Setembro
     case 11: // Novembro
         diasNoMes = 30;
         break;
@@ -304,9 +295,20 @@ void gerarCPF(char *cpf, int n)
 
     // Insere os pontos e hífen
     char cpfFormatado[15];
-    snprintf(cpfFormatado, sizeof(cpfFormatado), "%c%c%c.%c%c%c.%c%c%c-%c%c",
-             cpf[0], cpf[1], cpf[2], cpf[3], cpf[4], cpf[5], cpf[6],
-             cpf[7], cpf[8], cpf[9], cpf[10]);
+    snprintf(cpfFormatado,
+             sizeof(cpfFormatado),
+             "%c%c%c.%c%c%c.%c%c%c-%c%c",
+             cpf[0],
+             cpf[1],
+             cpf[2],
+             cpf[3],
+             cpf[4],
+             cpf[5],
+             cpf[6],
+             cpf[7],
+             cpf[8],
+             cpf[9],
+             cpf[10]);
 
     // Copia o CPF formatado para o parâmetro de saída
     snprintf(cpf, 15, "%s", cpfFormatado);
@@ -341,7 +343,7 @@ void menuBusca(FILE *out)
 
         inicio = clock();
 
-        TFunc* func = busca_sequencial_funcionario(num, out, tamanho_total_funcionario(out));
+        TFunc *func = busca_sequencial_funcionario(num, out, tamanho_total_funcionario(out));
 
         fim = clock();
         tempo_execucao = (double)(fim - inicio) / CLOCKS_PER_SEC;
@@ -369,7 +371,7 @@ void menuBusca(FILE *out)
 
         inicio = clock();
 
-        TFunc* func1 = busca_binaria_funcionario(indice, out, tamanho_total_funcionario(out));
+        TFunc *func1 = busca_binaria_funcionario(indice, out, tamanho_total_funcionario(out));
 
         fim = clock();
         tempo_execucao = (double)(fim - inicio) / CLOCKS_PER_SEC;
@@ -398,7 +400,6 @@ void menuBusca(FILE *out)
         system("cls");
         printf("\n----------EXIT----------\n");
     }
-
 }
 
 void menuInicialFuncionario(FILE *out)
@@ -409,6 +410,7 @@ void menuInicialFuncionario(FILE *out)
     printf("2: IMPRIMIR BASE\n");
     printf("3: BUSCA\n");
     printf("4: ORDENAR BASE\n");
+    printf("5: EXCLUIR BASE\n");
     printf("9: VOLTAR\n");
     printf("0: EXIT\n");
     printf("**********************************************\n\n");
@@ -437,6 +439,27 @@ void menuInicialFuncionario(FILE *out)
     case 4:
         system("cls");
         menu_ordenacao_funcionario(out);
+        break;
+    case 5:
+        system("cls");
+        printf("----------EXCLUIR BASE----------\n");
+        printf("\nDeseja excluir a base de funcionarios?\nDigite 1 para SIM ou 0 para NAO: ");
+        int opcao;
+        scanf("%d", &opcao);
+
+        if (opcao == 1)
+        {
+            fclose(out);
+            remove("funcionario.dat");
+            out = fopen("funcionario.dat", "w+b");
+            printf("\nBase de funcionarios excluida com sucesso!\n\n");
+        }
+        else
+        {
+            printf("\nBase de funcionarios nao excluida!\n\n");
+        }
+
+        menuInicialFuncionario(out);
         break;
     case 9:
         system("cls");
@@ -473,7 +496,6 @@ void menu_ordenacao_funcionario(FILE *out)
     case 2:
 
         system("cls");
-        printf("CRIANDO PARTICOES....\n");
 
         criar_particoes_func(out);
 
@@ -606,14 +628,15 @@ void criar_particoes_func(FILE *arq)
     printf("\nDigite o tamanho de particoes (MAX = %d): ", tam);
     scanf("%f", &tam_part);
 
-    if(tam_part > tam){
+    if (tam_part > tam)
+    {
         printf("\nNao e possivel criar uma particao maior que o tamanho total da base.\n\n");
         criar_particoes_func(arq);
-
-    }else if(tam_part <= 0){
+    }
+    else if (tam_part <= 0)
+    {
         printf("\nNao e possivel criar uma particao com o tamanho igual ou menor a 0.\n\n");
         criar_particoes_func(arq);
-
     }
 
     qnt_part = (int)ceil(tam / tam_part);
@@ -623,7 +646,18 @@ void criar_particoes_func(FILE *arq)
     // Array para armazenar temporariamente os registros da partição em RAM
     TFunc *particao_temp = malloc(sizeof(TFunc) * tam_part);
 
-    for(int i=1; i<=qnt_part; i++)
+    printf("\n------CRIANDO PARTICOES ORDENADAS------\n");
+
+    int opcao = 0;
+    printf("\nDeseja imprimir as particoes ordenadas?\nDigite 1 para SIM ou 0 para NAO: ");
+    scanf("%d", &opcao);
+
+    clock_t start, end;
+    double cpu_time_used;
+
+    start = clock();
+
+    for (int i = 1; i <= qnt_part; i++)
     {
         //declara ponteiro para arquivo
         FILE *particao;
@@ -658,8 +692,11 @@ void criar_particoes_func(FILE *arq)
 
             fwrite(particao_temp, sizeof(TFunc), fim - inicio, particao);
 
-            printf("\nParticao %d \n", i);
-            le_funcionarios(particao);
+            if (opcao != 0)
+            {
+                printf("\n\n\n-+-+-+-+-+-+-+-+- PARTICAO %d -+-+-+-+-+-+-+-+-", i);
+                le_funcionarios(particao);
+            }
 
             // Fechamento do arquivo da partição
             fclose(particao);
@@ -667,54 +704,80 @@ void criar_particoes_func(FILE *arq)
     }
     free(particao_temp);
 
+        end = clock();
+
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    //printf("\nTempo de execucao: %f segundos\n", cpu_time_used);
+
     printf("\n-----INTERCALANDO PARTICOES COM INTERCALACAO OTIMA-----\n");
-    intercalacao_otima_func(qnt_part, "funcionarios_ordenados.dat");
+    intercalacao_otima_func(arq, qnt_part, "funcionarios_ordenados.dat", cpu_time_used);
+
 }
 
-void intercalacao_otima_func(int qnt_part, const char *nome_base)
+void intercalacao_otima_func(FILE *arq, int qnt_part, const char *nome_base, float time_used)
 {
+    clock_t start, end;
+    double cpu_time_used;
+
+    start = clock();
+
     // Abre o arquivo de saída para a intercalação final
     FILE *saida;
-    if ((saida = fopen(nome_base, "w+b")) == NULL) {
+    if ((saida = fopen(nome_base, "w+b")) == NULL)
+    {
         printf("Erro ao abrir arquivo de saida\n");
         exit(1);
     }
 
     // Abre os arquivos das partições para leitura e intercalação
     FILE **particoes = malloc(sizeof(FILE *) * qnt_part);
-    for (int i = 1; i <= qnt_part; i++) {
+    for (int i = 0; i < qnt_part; i++)
+    {
         char nome_particao[16];
-        sprintf(nome_particao, "particao-%02d.dat", i);
+        sprintf(nome_particao, "particao-%02d.dat", i + 1);
 
-        if ((particoes[i - 1] = fopen(nome_particao, "rb")) == NULL) {
-            printf("Erro ao abrir arquivo de particao %d\n", i);
+        //printf("\n%d", i+1);
+
+        if ((particoes[i] = fopen(nome_particao, "rb")) == NULL)
+        {
+            printf("Erro ao abrir arquivo de particao %d\n", i + 1);
             exit(1);
         }
+        //printf("\nteste\n");
+        //puts(nome_particao);
+        //fclose(nome_particao);
     }
 
     // Array para armazenar temporariamente o próximo registro de cada partição
     TFunc *registro_atual = malloc(sizeof(TFunc) * qnt_part);
 
     // Leitura inicial do primeiro registro de cada partição
-    for (int i = 0; i < qnt_part; i++) {
-        if (fread(&registro_atual[i], sizeof(TFunc), 1, particoes[i]) != 1) {
+    for (int i = 0; i < qnt_part; i++)
+    {
+        if (fread(&registro_atual[i], sizeof(TFunc), 1, particoes[i]) != 1)
+        {
             // Se a partição estiver vazia, coloca um valor máximo no registro para evitar problemas
             registro_atual[i].cod = INT_MAX;
         }
     }
 
     // Intercalação dos registros até que todas as partições estejam vazias
-    while (1) {
+    while (1)
+    {
         // Encontra o menor registro atual dentre todas as partições
         int menor_indice = -1;
-        for (int i = 0; i < qnt_part; i++) {
-            if (registro_atual[i].cod != INT_MAX && (menor_indice == -1 || registro_atual[i].cod < registro_atual[menor_indice].cod)) {
+        for (int i = 0; i < qnt_part; i++)
+        {
+            if (registro_atual[i].cod != INT_MAX &&
+                (menor_indice == -1 || registro_atual[i].cod < registro_atual[menor_indice].cod))
+            {
                 menor_indice = i;
             }
         }
 
         // Se todas as partições estão vazias, a intercalação está completa
-        if (menor_indice == -1) {
+        if (menor_indice == -1)
+        {
             break;
         }
 
@@ -722,36 +785,98 @@ void intercalacao_otima_func(int qnt_part, const char *nome_base)
         fwrite(&registro_atual[menor_indice], sizeof(TFunc), 1, saida);
 
         // Lê o próximo registro da partição que tinha o menor registro
-        if (fread(&registro_atual[menor_indice], sizeof(TFunc), 1, particoes[menor_indice]) != 1) {
+        if (fread(&registro_atual[menor_indice], sizeof(TFunc), 1, particoes[menor_indice]) != 1)
+        {
             // Se a partição estiver vazia, coloca um valor máximo no registro para evitar problemas
             registro_atual[menor_indice].cod = INT_MAX;
         }
     }
 
-    // Fecha os arquivos das partições e o arquivo de saída
-    for (int i = 0; i < qnt_part; i++) {
-        fclose(particoes[i]);
+    end = clock();
+
+    printf("\nDeseja imprimir as base completa ordenada?\nDigite 1 para SIM ou 0 para NAO: ");
+    int opcao;
+    scanf("%d", &opcao);
+
+    if (opcao != 0)
+    {
+        printf("\n\n\n-+-+-+-+-+-+-+-+-+-+- BASE ORDENADA -+-+-+-+-+-+-+-+-+-+-");
+        le_funcionarios(saida);
     }
 
-    le_funcionarios(saida);
+    printf("\nBASE ATUALIZADA PARA SUA VERSAO ORDENADA!\n");
 
-    fclose(saida);
+    printf("\nLIBERANDO MEMORIA...\n");
+    // Fecha os arquivos das partições e o arquivo de saída
+    for (int i = 0; i < qnt_part; i++)
+    {
+        fclose(particoes[i]);
+        //remover os arquivo de partições
+        char nome_particao[20];
+        sprintf(nome_particao, "particao-%02d.dat", i + 1);
+        remove(nome_particao);
+    }
 
     // Libera a memória alocada
+    fclose(saida);
+
+    // Copia o conteúdo do arquivo ordenado para o arquivo original
+    copiar_arquivo_func(arq, "funcionarios_ordenados.dat");
+
+    remove("funcionarios_ordenados.dat");
     free(particoes);
     free(registro_atual);
+
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("\nTempo de execucao: %f segundos\n\n\n", cpu_time_used + time_used);
 }
 
-void selececao_por_substituicao_func(TFunc *arr, int size) {
+void copiar_arquivo_func(FILE *arq_destino, const char *nome_arquivo_origem)
+{
+
+    // Abre o arquivo de destino para escrita binária (truncando o arquivo)
+    //FILE *arq_destino;
+    if ((arq_destino = fopen("funcionario.dat", "wb")) == NULL)
+    {
+        printf("Erro ao abrir arquivo de destino\n");
+        return;
+    }
+
+    // Abre o arquivo de origem para leitura binária
+    FILE *arq_origem;
+    if ((arq_origem = fopen(nome_arquivo_origem, "rb")) == NULL)
+    {
+        printf("Erro ao abrir arquivo de origem\n");
+        fclose(arq_destino); // Fecha o arquivo de destino antes de retornar
+        return;
+    }
+
+    TFunc funcionario;
+
+    while (fread(&funcionario, sizeof(TFunc), 1, arq_origem) == 1)
+    {
+        fwrite(&funcionario, sizeof(TFunc), 1, arq_destino);
+    }
+
+    fclose(arq_origem);
+    fclose(arq_destino);
+}
+
+void selececao_por_substituicao_func(TFunc *arr, int size)
+{
     int i, j, min_idx;
-    for (i = 0; i < size - 1; i++) {
+    for (i = 0; i < size - 1; i++)
+    {
         min_idx = i;
-        for (j = i + 1; j < size; j++) {
-            if (arr[j].cod < arr[min_idx].cod) {
+        for (j = i + 1; j < size; j++)
+        {
+            if (arr[j].cod < arr[min_idx].cod)
+            {
                 min_idx = j;
             }
         }
-        if (min_idx != i) {
+        if (min_idx != i)
+        {
             TFunc temp = arr[i];
             arr[i] = arr[min_idx];
             arr[min_idx] = temp;
@@ -759,7 +884,8 @@ void selececao_por_substituicao_func(TFunc *arr, int size) {
     }
 }
 
-void selection_sort_disco_funcionario(FILE *arq){
+void selection_sort_disco_funcionario(FILE *arq)
+{
     //ordenação pelo atributo cod de TFunc
     int tam = tamanho_total_funcionario(arq);
     int i, j, min, cont = 0;
@@ -767,14 +893,14 @@ void selection_sort_disco_funcionario(FILE *arq){
     for (i = 1; i < tam; i++)
     {
         //posiciona o arquivo no registro i
-        fseek(arq, (i-1) * tamanho(), SEEK_SET);
+        fseek(arq, (i - 1) * tamanho(), SEEK_SET);
         TFunc *fi = le(arq);
         //printf("\n********* Funcionario atual: %d\n", fi->cod);
         min = i;
-        for (j = i+1; j <= tam; j++)
+        for (j = i + 1; j <= tam; j++)
         {
             //posiciona o arquivo no registro j
-            fseek(arq, (j-1) * tamanho(), SEEK_SET);
+            fseek(arq, (j - 1) * tamanho(), SEEK_SET);
             TFunc *fj = le(arq);
             //printf("fj = %d\n", fj->cod);
             if (fj->cod < fi->cod)
@@ -782,16 +908,16 @@ void selection_sort_disco_funcionario(FILE *arq){
                 min = j;
                 //printf("min = %d\n", min);
                 //posiciona o arquivo no registro min
-                fseek(arq, (min-1) * tamanho(), SEEK_SET);
+                fseek(arq, (min - 1) * tamanho(), SEEK_SET);
                 TFunc *fmin = le(arq);
                 //printf("fmin = %d\n", fmin->cod);
                 //troca os registros
-                fseek(arq, (i-1) * tamanho(), SEEK_SET);
+                fseek(arq, (i - 1) * tamanho(), SEEK_SET);
                 salva_funcionario(fmin, arq);
-                fseek(arq, (min-1) * tamanho(), SEEK_SET);
+                fseek(arq, (min - 1) * tamanho(), SEEK_SET);
                 salva_funcionario(fi, arq);
                 //posiciona o arquivo no registro i
-                fseek(arq, (i-1) * tamanho(), SEEK_SET);
+                fseek(arq, (i - 1) * tamanho(), SEEK_SET);
                 fi = le(arq);
                 //printf("fi = %d\n", fi->cod);
                 cont++;
@@ -807,17 +933,17 @@ void selection_sort_disco_funcionario(FILE *arq){
 void insertion_sort_disco_funcionario(FILE *arq)
 {
     int tam = tamanho_total_funcionario(arq);
-    int i, cont=0;
+    int i, cont = 0;
     //faz o insertion sort
     for (int j = 2; j <= tam; j++)
     {
         //posiciona o arquivo no registro j
-        fseek(arq, (j-1) * tamanho(), SEEK_SET);
+        fseek(arq, (j - 1) * tamanho(), SEEK_SET);
         TFunc *fj = le(arq);
         //printf("\n********* Funcionario atual: %d\n", fj->cod);
         i = j - 1;
         //posiciona o cursor no registro i
-        fseek(arq, (i-1) * tamanho(), SEEK_SET);
+        fseek(arq, (i - 1) * tamanho(), SEEK_SET);
         TFunc *fi = le(arq);
         //printf("fi = %d\n", fi->cod);
         while ((i > 0) && (fi->cod > fj->cod))
@@ -828,20 +954,22 @@ void insertion_sort_disco_funcionario(FILE *arq)
             salva_funcionario(fi, arq);
             i = i - 1;
             //lÃª registro i
-            fseek(arq, (i-1) * tamanho(), SEEK_SET);
+            fseek(arq, (i - 1) * tamanho(), SEEK_SET);
             fi = le(arq);
             //printf("fi = %d; i = %d\n", fi->cod, i);
             cont++;
         }
         //posiciona cursor no registro i + 1
-        fseek(arq, (i) * tamanho(), SEEK_SET);
+        fseek(arq, (i)*tamanho(), SEEK_SET);
         //printf("*** salva_funcionariondo funcionario %d na posicao %d\n", fj->cod, i+1);
         //salva_funcionario registro j na posiÃ§Ã£o i
         salva_funcionario(fj, arq);
-        if (fi != NULL) {
+        if (fi != NULL)
+        {
             free(fi);
         }
-        if (fj != NULL) {
+        if (fj != NULL)
+        {
             free(fj);
         }
     }
@@ -874,7 +1002,7 @@ void insertion_sort_memoria_funcionario(FILE *arq)
             v[i + 1] = v[i];
             i = i - 1;
         }
-        v[i+1] = f;
+        v[i + 1] = f;
     }
     //grava vetor no arquivo, por cima do conteÃºdo anterior
     rewind(arq);
@@ -884,14 +1012,13 @@ void insertion_sort_memoria_funcionario(FILE *arq)
     }
     //descarrega o buffer para ter certeza que dados foram gravados
     fflush(arq);
-
 }
 
 int tamanho_total_funcionario(FILE *in)
 {
     rewind(in);
     TFunc *f;
-    int i=0;
+    int i = 0;
     while ((f = le(in)) != NULL)
     {
         free(f);
@@ -902,6 +1029,11 @@ int tamanho_total_funcionario(FILE *in)
 
 void le_funcionarios(FILE *in)
 {
+    if (tamanho_total_funcionario(in) == 0)
+    {
+        printf("\nArquivo vazio!\n\n");
+        return;
+    }
     printf("\n\nLendo funcionarios do arquivo...\n\n");
     rewind(in);
     TFunc *f;

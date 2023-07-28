@@ -85,6 +85,8 @@ void selececao_por_substituicao_func(TFunc *arr, int size);
 
 void criar_particoes_func(FILE *out);
 
-void intercalacao_otima_func(int qnt_part, const char *nome_base);
+void intercalacao_otima_func(FILE *arq, int qnt_part, const char *nome_base, float time_used);
+
+void copiar_arquivo_func(FILE *arq_destino, const char *nome_arquivo_origem);
 
 #endif //FUNCIONARIO_H

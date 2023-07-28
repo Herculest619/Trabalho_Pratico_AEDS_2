@@ -24,7 +24,8 @@
         "**/.factorypath": true
     },
     "files.associations": {
-        ".clang*": "yaml"
+        ".clang*": "yaml",
+        "time.h": "c"
     },
     "files.insertFinalNewline": true,
     "files.trimFinalNewlines": true,

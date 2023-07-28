@@ -32,12 +32,12 @@ void menu(FILE *func, FILE *clien, FILE *equip){
         system("cls");
         menuInicialCliente(clien);
         break;
-    
+
     case 2:
         system("cls");
         menuInicialFuncionario(func);
         break;
-    
+
     case 3:
         system("cls");
         menuInicialEstoque(equip);
