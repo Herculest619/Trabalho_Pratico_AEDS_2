@@ -1,0 +1,37 @@
+-----------------------------
+Ordenação com Particionamento e Intercalação Otima
+Tempo de execucao: 0.020000 segundos
+Tamanho da base: 500
+Tamanho da particao: 50
+Quantidade de particoes: 10
+-----------------------------
+
+
+-----------------------------
+Ordenção em disco usando Insertion Sort
+Tempo de execucao: 0.003000 segundos
+Tamanho da base: 500
+-----------------------------
+
+
+-----------------------------
+Ordenção em disco usando Selection Sort
+Tempo de execucao: 0.229000 segundos
+Tamanho da base: 500
+-----------------------------
+
+
+-----------------------------
+Busca sequencial
+Tempo de execucao: 0.000000 segundos
+Tamanho da base: 500
+-----------------------------
+
+
+-----------------------------
+Busca binaria
+Tempo de execucao: 0.000000 segundos
+Tamanho da base: 500
+-----------------------------
+
+

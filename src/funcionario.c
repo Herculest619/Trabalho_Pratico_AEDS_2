@@ -359,6 +359,23 @@ void menuBusca(FILE *out)
 
         printf("\n\nTempo de execucao da busca sequencial: %.6f segundos\n\n", tempo_execucao);
 
+        FILE *resultado;
+        resultado = fopen("resultados.txt", "a");
+
+        if (resultado == NULL) {
+            printf("Erro ao abrir o arquivo.\n");
+            menuInicialFuncionario(out);
+            break;
+        }
+
+        fprintf(resultado, "-----------------------------\n");
+        fprintf(resultado, "Busca sequencial\n");
+        fprintf(resultado, "Tempo de execucao: %f segundos\n", tempo_execucao);
+        fprintf(resultado, "Tamanho da base: %d\n", tamanho_total_funcionario(out));
+        fprintf(resultado, "-----------------------------\n\n\n");
+
+        fclose(resultado);
+
         menuInicialFuncionario(out);
         break;
 
@@ -386,6 +403,24 @@ void menuBusca(FILE *out)
         }
 
         printf("\n\nTempo de execucao da busca binaria: %.6f segundos\n\n", tempo_execucao);
+
+        FILE *resultado1;
+        resultado1 = fopen("resultados.txt", "a");
+
+        if (resultado1 == NULL)
+        {
+            printf("Erro ao abrir o arquivo.\n");
+            menuInicialFuncionario(out);
+            break;
+        }
+
+        fprintf(resultado1, "-----------------------------\n");
+        fprintf(resultado1, "Busca binaria\n");
+        fprintf(resultado1, "Tempo de execucao: %f segundos\n", tempo_execucao);
+        fprintf(resultado1, "Tamanho da base: %d\n", tamanho_total_funcionario(out));
+        fprintf(resultado1, "-----------------------------\n\n\n");
+
+        fclose(resultado1);
 
         menuInicialFuncionario(out);
         break;
@@ -542,6 +577,25 @@ void menu_ordenacao_funcionario_disco(FILE *out)
         fim = clock();
         tempo_execucao = (double)(fim - inicio) / CLOCKS_PER_SEC;
         printf("\nTempo para ordenar com Insertion Sort: %.6f segundos\n\n", tempo_execucao);
+
+        //salvar o tempo de execução em um arquivo txt
+        FILE *resultadob;
+        resultadob = fopen("resultados.txt", "a");
+
+        if (resultadob == NULL) {
+            printf("Erro ao abrir o arquivo.\n");
+            menuInicialFuncionario(out);
+            break;
+        }
+
+        fprintf(resultadob, "-----------------------------\n");
+        fprintf(resultadob, "Ordenção em disco usando Insertion Sort\n");
+        fprintf(resultadob, "Tempo de execucao: %f segundos\n", tempo_execucao);
+        fprintf(resultadob, "Tamanho da base: %d\n", tamanho_total_funcionario(out));
+        fprintf(resultadob, "-----------------------------\n\n\n");
+
+        fclose(resultadob);
+
         menuInicialFuncionario(out);
         break;
 
@@ -555,6 +609,26 @@ void menu_ordenacao_funcionario_disco(FILE *out)
         fim = clock();
         tempo_execucao = (double)(fim - inicio) / CLOCKS_PER_SEC;
         printf("\nTempo para ordenar com Selection Sort: %.6f segundos\n\n", tempo_execucao);
+
+        //salvar o tempo de execução em um arquivo txt
+        FILE *resultado;
+        resultado = fopen("resultados.txt", "a");
+
+        if (resultado == NULL)
+        {
+            printf("Erro ao abrir o arquivo.\n");
+            menuInicialFuncionario(out);
+            break;
+        }
+
+        fprintf(resultado, "-----------------------------\n");
+        fprintf(resultado, "Ordenção em disco usando Selection Sort\n");
+        fprintf(resultado, "Tempo de execucao: %f segundos\n", tempo_execucao);
+        fprintf(resultado, "Tamanho da base: %d\n", tamanho_total_funcionario(out));
+        fprintf(resultado, "-----------------------------\n\n\n");
+
+        fclose(resultado);
+
         menuInicialFuncionario(out);
         break;
 
@@ -704,14 +778,13 @@ void criar_particoes_func(FILE *arq)
     }
     free(particao_temp);
 
-        end = clock();
+    end = clock();
 
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
     //printf("\nTempo de execucao: %f segundos\n", cpu_time_used);
 
     printf("\n-----INTERCALANDO PARTICOES COM INTERCALACAO OTIMA-----\n");
     intercalacao_otima_func(arq, qnt_part, "funcionarios_ordenados.dat", cpu_time_used);
-
 }
 
 void intercalacao_otima_func(FILE *arq, int qnt_part, const char *nome_base, float time_used)
@@ -827,8 +900,29 @@ void intercalacao_otima_func(FILE *arq, int qnt_part, const char *nome_base, flo
     free(particoes);
     free(registro_atual);
 
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
     printf("\nTempo de execucao: %f segundos\n\n\n", cpu_time_used + time_used);
+
+    //salvar o tempo de execução em um arquivo txt
+    FILE *resultado;
+    resultado = fopen("resultados.txt", "a");
+
+    if (resultado == NULL)
+    {
+        printf("Erro ao abrir o arquivo.\n");
+        menuInicialFuncionario(arq);
+        //break;
+    }
+
+    fprintf(resultado, "-----------------------------\n");
+    fprintf(resultado, "Ordenação com Particionamento e Intercalação Otima\n");
+    fprintf(resultado, "Tempo de execucao: %f segundos\n", cpu_time_used + time_used);
+    fprintf(resultado, "Tamanho da base: %d\n", tamanho_total_funcionario(arq));
+    fprintf(resultado, "Tamanho da particao: %d\n", tamanho_total_funcionario(arq) / qnt_part);
+    fprintf(resultado, "Quantidade de particoes: %d\n", qnt_part);
+    fprintf(resultado, "-----------------------------\n\n\n");
+
+    fclose(resultado);
 }
 
 void copiar_arquivo_func(FILE *arq_destino, const char *nome_arquivo_origem)

@@ -106,6 +106,25 @@ void menu_ordenacao_disco_equipamento(FILE *equip)
         fim = clock();
         tempo_execucao = (double)(fim - inicio) / CLOCKS_PER_SEC;
         printf("\nTempo para ordenar com Insertion Sort: %.6f segundos\n\n", tempo_execucao);
+
+        //salvar o tempo de execução em um arquivo txt
+        FILE *resultado;
+        resultado = fopen("resultados.txt", "a");
+
+        if (resultado == NULL) {
+            printf("Erro ao abrir o arquivo.\n");
+            menuInicialEstoque(equip);
+            break;
+        }
+
+        fprintf(resultado, "-----------------------------\n");
+        fprintf(resultado, "Ordenção em disco usando Insertion Sort\n");
+        fprintf(resultado, "Tempo de execucao: %f segundos\n", tempo_execucao);
+        fprintf(resultado, "Tamanho da base: %d\n", tamanho_total_equipamento(equip));
+        fprintf(resultado, "-----------------------------\n\n\n");
+
+        fclose(resultado);
+
         menuInicialEstoque(equip);
         break;
 
@@ -119,6 +138,25 @@ void menu_ordenacao_disco_equipamento(FILE *equip)
         fim = clock();
         tempo_execucao = (double)(fim - inicio) / CLOCKS_PER_SEC;
         printf("\nTempo para ordenar com Selection Sort: %.6f segundos\n\n", tempo_execucao);
+
+        //salvar o tempo de execução em um arquivo txt
+        FILE *resultadob;
+        resultadob = fopen("resultados.txt", "a");
+
+        if (resultadob == NULL) {
+            printf("Erro ao abrir o arquivo.\n");
+            menuInicialEstoque(equip);
+            break;
+        }
+
+        fprintf(resultadob, "-----------------------------\n");
+        fprintf(resultadob, "Ordenção em disco usando Selection Sort\n");
+        fprintf(resultadob, "Tempo de execucao: %f segundos\n", tempo_execucao);
+        fprintf(resultadob, "Tamanho da base: %d\n", tamanho_total_equipamento(equip));
+        fprintf(resultadob, "-----------------------------\n\n\n");
+
+        fclose(resultadob);
+
         menuInicialEstoque(equip);
         break;
 
@@ -312,6 +350,23 @@ void menuBuscaEquipamento(FILE *equip)
 
         printf("\n\nTempo de execucao da busca sequencial: %.6f segundos\n\n", tempo_execucao);
 
+        FILE *resultado;
+        resultado = fopen("resultados.txt", "a");
+
+        if (resultado == NULL) {
+            printf("Erro ao abrir o arquivo.\n");
+            menuInicialEstoque(equip);
+            break;
+        }
+
+        fprintf(resultado, "-----------------------------\n");
+        fprintf(resultado, "Busca sequencial\n");
+        fprintf(resultado, "Tempo de execucao: %f segundos\n", tempo_execucao);
+        fprintf(resultado, "Tamanho da base: %d\n", tamanho_total_equipamento(equip));
+        fprintf(resultado, "-----------------------------\n\n\n");
+
+        fclose(resultado);
+
         menuInicialEstoque(equip);
         break;
 
@@ -335,7 +390,25 @@ void menuBuscaEquipamento(FILE *equip)
             printf("\n--------equipamento nao encontrado--------\n\n");
         }
 
-        printf("\n\nTempo de execucao da busca sequencial: %.6f segundos\n\n", tempo_execucao);
+        printf("\n\nTempo de execucao da busca binaria: %.6f segundos\n\n", tempo_execucao);
+
+        FILE *resultado1;
+        resultado1 = fopen("resultados.txt", "a");
+
+        if (resultado1 == NULL)
+        {
+            printf("Erro ao abrir o arquivo.\n");
+            menuInicialEstoque(equip);
+            break;
+        }
+
+        fprintf(resultado1, "-----------------------------\n");
+        fprintf(resultado1, "Busca binaria\n");
+        fprintf(resultado1, "Tempo de execucao: %f segundos\n", tempo_execucao);
+        fprintf(resultado1, "Tamanho da base: %d\n", tamanho_total_equipamento(equip));
+        fprintf(resultado1, "-----------------------------\n\n\n");
+
+        fclose(resultado1);
 
         menuInicialEstoque(equip);
         break;
@@ -863,6 +936,27 @@ void intercalacao_otima_equip(FILE *arq, int qnt_part, const char *nome_base, fl
 
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     printf("\nTempo de execucao: %f segundos\n\n\n", cpu_time_used + time_used);
+
+
+    FILE *resultado;
+    resultado = fopen("resultados.txt", "a");
+
+    if (resultado == NULL)
+    {
+        printf("Erro ao abrir o arquivo.\n");
+        menuInicialEstoque(arq);
+        //break;
+    }
+
+    fprintf(resultado, "-----------------------------\n");
+    fprintf(resultado, "Ordenação com Particionamento e Intercalação Otima\n");
+    fprintf(resultado, "Tempo de execucao: %f segundos\n", cpu_time_used + time_used);
+    fprintf(resultado, "Tamanho da base: %d\n", tamanho_total_equipamento(arq));
+    fprintf(resultado, "Tamanho da particao: %d\n", tamanho_total_equipamento(arq) / qnt_part);
+    fprintf(resultado, "Quantidade de particoes: %d\n", qnt_part);
+    fprintf(resultado, "-----------------------------\n\n\n");
+
+    fclose(resultado);
 }
 
 void copiar_arquivo_equip(FILE *arq_destino, const char *nome_arquivo_origem)

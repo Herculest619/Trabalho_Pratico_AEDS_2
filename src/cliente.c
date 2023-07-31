@@ -1,14 +1,15 @@
 #include "cliente.h"
-#include "main.h"
 #include "funcionario.h"
-#include <string.h>
+#include "main.h"
+#include <math.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
+#include <string.h>
 #include <time.h>
-#include <math.h>
 
-void menuInicialCliente(FILE *clien){
+void menuInicialCliente(FILE *clien)
+{
     int opcao;
     printf("**********************************************\n");
     printf("----MENU CLIENTE----\n");
@@ -75,7 +76,8 @@ void menuInicialCliente(FILE *clien){
     }
 }
 
-void menuCriarBaseCliente(FILE *clien){
+void menuCriarBaseCliente(FILE *clien)
+{
     printf("-----CRIAR BASE DE CLIENTES-----\n");
     printf("1: ORDENADA\n");
     printf("2: DESORDENADA\n");
@@ -125,11 +127,13 @@ void menuCriarBaseCliente(FILE *clien){
     }
 }
 
-Tclien *cliente(int cod, char *nome, char *cpf, char *data, double mensalidade){
+Tclien *cliente(int cod, char *nome, char *cpf, char *data, double mensalidade)
+{
     // Aloca memória para o cliente
     Tclien *clien = (Tclien *)malloc(sizeof(Tclien));
     //inicializa espaço de memória com ZEROS
-    if (clien) memset(clien, 0, sizeof(Tclien));
+    if (clien)
+        memset(clien, 0, sizeof(Tclien));
 
     clien->cod = cod;
     strcpy(clien->nome, nome);
@@ -140,7 +144,8 @@ Tclien *cliente(int cod, char *nome, char *cpf, char *data, double mensalidade){
     return clien;
 }
 
-void criarBaseClientesOrdenada(FILE *clien){
+void criarBaseClientesOrdenada(FILE *clien)
+{
     int n;
     printf("\nDigite a quantidade de clientes a serem inseridos ordenados: ");
     scanf("%d", &n);
@@ -163,14 +168,15 @@ void criarBaseClientesOrdenada(FILE *clien){
     printf("\nCONCLUIDO\n");
 }
 
-void criarBaseClientesDesordenada(FILE *clien){
+void criarBaseClientesDesordenada(FILE *clien)
+{
     int n;
     printf("\nDigite a quantidade de clientes a serem inseridos desordenados: ");
     scanf("%d", &n);
     printf("\nInserindo %d clientes no arquivo...\n", n);
     printf("\nCONCLUIDO\n");
 
-    int *indices = (int*)malloc(n * sizeof(int));
+    int *indices = (int *)malloc(n * sizeof(int));
     for (int i = 0; i < n; i++)
     {
         indices[i] = i + 1;
@@ -193,7 +199,8 @@ void criarBaseClientesDesordenada(FILE *clien){
     free(indices);
 }
 
-void salva_cliente(Tclien *clien, FILE *clien_file){
+void salva_cliente(Tclien *clien, FILE *clien_file)
+{
 
     fwrite(&clien->cod, sizeof(int), 1, clien_file);
     fwrite(clien->nome, sizeof(char), sizeof(clien->nome), clien_file);
@@ -202,9 +209,10 @@ void salva_cliente(Tclien *clien, FILE *clien_file){
     fwrite(&clien->mensalidade, sizeof(double), 1, clien_file);
 }
 
-double gerarMensalidade(int i){
+double gerarMensalidade(int i)
+{
     // gerar mensalidade aleatória entre R$59,90 e R$199,90
-    double mensalidade = ((rand()*i) % 14000) + 5990;
+    double mensalidade = ((rand() * i) % 14000) + 5990;
     mensalidade = mensalidade / 100;
     return mensalidade;
 }
@@ -245,7 +253,7 @@ void le_cliente(FILE *in)
 
 Tclien *ler(FILE *in)
 {
-    Tclien *clien = (Tclien *) malloc(sizeof(Tclien));
+    Tclien *clien = (Tclien *)malloc(sizeof(Tclien));
     if (0 >= fread(&clien->cod, sizeof(int), 1, in))
     {
         free(clien);
@@ -287,7 +295,7 @@ void menuBuscaCliente(FILE *out)
 
         inicio = clock();
 
-        Tclien* clien = busca_sequencial_cliente(num, out, tamanho_total_cliente(out));
+        Tclien *clien = busca_sequencial_cliente(num, out, tamanho_total_cliente(out));
 
         fim = clock();
         tempo_execucao = (double)(fim - inicio) / CLOCKS_PER_SEC;
@@ -303,6 +311,25 @@ void menuBuscaCliente(FILE *out)
 
         printf("\n\nTempo de execucao da busca sequencial: %.6f segundos\n\n", tempo_execucao);
 
+        //salvar o tempo de execução em um arquivo txt
+
+        FILE *resultado;
+        resultado = fopen("resultados.txt", "a");
+
+        if (resultado == NULL) {
+            printf("Erro ao abrir o arquivo.\n");
+            menuInicialCliente(out);
+            break;
+        }
+
+        fprintf(resultado, "-----------------------------\n");
+        fprintf(resultado, "Busca sequencial\n");
+        fprintf(resultado, "Tempo de execucao: %f segundos\n", tempo_execucao);
+        fprintf(resultado, "Tamanho da base: %d\n", tamanho_total_cliente(out));
+        fprintf(resultado, "-----------------------------\n\n\n");
+
+        fclose(resultado);
+
         menuInicialCliente(out);
         break;
 
@@ -315,7 +342,7 @@ void menuBuscaCliente(FILE *out)
 
         inicio = clock();
 
-        Tclien* clien1 = busca_binaria_cliente(indice, out, tamanho_total_cliente(out));
+        Tclien *clien1 = busca_binaria_cliente(indice, out, tamanho_total_cliente(out));
 
         fim = clock();
         tempo_execucao = (double)(fim - inicio) / CLOCKS_PER_SEC;
@@ -331,6 +358,26 @@ void menuBuscaCliente(FILE *out)
 
         printf("\n\nTempo de execucao da busca binaria: %.6f segundos\n\n", tempo_execucao);
 
+        //salvar o tempo de execução em um arquivo txt
+
+        FILE *resultado1;
+        resultado1 = fopen("resultados.txt", "a");
+
+        if (resultado1 == NULL)
+        {
+            printf("Erro ao abrir o arquivo.\n");
+            menuInicialCliente(out);
+            break;
+        }
+
+        fprintf(resultado1, "-----------------------------\n");
+        fprintf(resultado1, "Busca binaria\n");
+        fprintf(resultado1, "Tempo de execucao: %f segundos\n", tempo_execucao);
+        fprintf(resultado1, "Tamanho da base: %d\n", tamanho_total_cliente(out));
+        fprintf(resultado1, "-----------------------------\n\n\n");
+
+        fclose(resultado1);
+
         menuInicialCliente(out);
         break;
 
@@ -344,20 +391,19 @@ void menuBuscaCliente(FILE *out)
         system("cls");
         printf("\n----------EXIT----------\n");
     }
-
 }
 
-Tclien* busca_sequencial_cliente(int cod, FILE* arq, int tam)
+Tclien *busca_sequencial_cliente(int cod, FILE *arq, int tam)
 {
     rewind(arq); // Reinicia o ponteiro de arquivo para o início
 
     for (int i = 0; i < tam; i++)
     {
-        Tclien* clien = ler(arq);
+        Tclien *clien = ler(arq);
         if (clien != NULL && clien->cod == cod)
         {
             printf("\n**********************************************");
-            printf("\nForam gastos %d iteracoes para encontrar o cliente!\n", i+1);
+            printf("\nForam gastos %d iteracoes para encontrar o cliente!\n", i + 1);
             return clien; // Cliente encontrado
         }
         free(clien);
@@ -366,23 +412,23 @@ Tclien* busca_sequencial_cliente(int cod, FILE* arq, int tam)
     return NULL; // Cliente não encontrado
 }
 
-Tclien* busca_binaria_cliente(int cod, FILE *arq, int tam)
+Tclien *busca_binaria_cliente(int cod, FILE *arq, int tam)
 {
     int count = 0;
     int left = 0, right = tam - 1;
-    while(left <= right)
+    while (left <= right)
     {
         count++;
         int middle = (left + right) / 2;
         fseek(arq, middle * tamanho(), SEEK_SET);
-        Tclien* clien = ler(arq);
-        if(cod == clien->cod)
+        Tclien *clien = ler(arq);
+        if (cod == clien->cod)
         {
             printf("\n**********************************************");
             printf("\nForam gastos %d iteracoes para encontrar o cliente!\n", count);
             return clien;
         }
-        else if(clien->cod < cod)
+        else if (clien->cod < cod)
         {
             left = middle + 1;
         }
@@ -398,7 +444,7 @@ int tamanho_total_cliente(FILE *in)
 {
     rewind(in);
     Tclien *c;
-    int i=0;
+    int i = 0;
     while ((c = ler(in)) != NULL)
     {
         free(c);
@@ -534,9 +580,9 @@ void criar_particoes_clien(FILE *arq)
     }
     free(particao_temp);
 
-        end = clock();
+    end = clock();
 
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
     //printf("\nTempo de execucao: %f segundos\n", cpu_time_used);
 
     printf("\n-----INTERCALANDO PARTICOES COM INTERCALACAO OTIMA-----\n");
@@ -678,9 +724,30 @@ void intercalacao_otima_clien(FILE *arq, int qnt_part, const char *nome_base, fl
     free(particoes);
     free(registro_atual);
 
-    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
     printf("\nTempo de execucao: %f segundos\n\n\n", cpu_time_used + time_used);
 
+    //salvar o tempo de execução em um arquivo txt
+
+    FILE *resultado;
+    resultado = fopen("resultados.txt", "a");
+
+    if (resultado == NULL)
+    {
+        printf("Erro ao abrir o arquivo.\n");
+        menuInicialCliente(arq);
+        //break;
+    }
+
+    fprintf(resultado, "-----------------------------\n");
+    fprintf(resultado, "Ordenação com Particionamento e Intercalação Otima\n");
+    fprintf(resultado, "Tempo de execucao: %f segundos\n", cpu_time_used + time_used);
+    fprintf(resultado, "Tamanho da base: %d\n", tamanho_total_cliente(arq));
+    fprintf(resultado, "Tamanho da particao: %d\n", tamanho_total_cliente(arq) / qnt_part);
+    fprintf(resultado, "Quantidade de particoes: %d\n", qnt_part);
+    fprintf(resultado, "-----------------------------\n\n\n");
+
+    fclose(resultado);
 }
 
 void copiar_arquivo_clien(FILE *arq_destino, const char *nome_arquivo_origem)
@@ -741,6 +808,25 @@ void menuOrdenarClienteDisco(FILE *out)
         fim = clock();
         tempo_execucao = (double)(fim - inicio) / CLOCKS_PER_SEC;
         printf("\nTempo para ordenar com Insertion Sort: %.6f segundos\n\n", tempo_execucao);
+
+        //salvar o tempo de execução em um arquivo txt
+        FILE *resultado;
+        resultado = fopen("resultados.txt", "a");
+
+        if (resultado == NULL) {
+            printf("Erro ao abrir o arquivo.\n");
+            menuInicialCliente(out);
+            break;
+        }
+
+        fprintf(resultado, "-----------------------------\n");
+        fprintf(resultado, "Ordenção em disco usando Insertion Sort\n");
+        fprintf(resultado, "Tempo de execucao: %f segundos\n", tempo_execucao);
+        fprintf(resultado, "Tamanho da base: %d\n", tamanho_total_cliente(out));
+        fprintf(resultado, "-----------------------------\n\n\n");
+
+        fclose(resultado);
+
         menuInicialCliente(out);
         break;
 
@@ -754,6 +840,25 @@ void menuOrdenarClienteDisco(FILE *out)
         fim = clock();
         tempo_execucao = (double)(fim - inicio) / CLOCKS_PER_SEC;
         printf("\nTempo para ordenar com Selection Sort: %.6f segundos\n\n", tempo_execucao);
+
+        //salvar o tempo de execução em um arquivo txt
+        FILE *resultadob;
+        resultadob = fopen("resultados.txt", "a");
+
+        if (resultadob == NULL) {
+            printf("Erro ao abrir o arquivo.\n");
+            menuInicialCliente(out);
+            break;
+        }
+
+        fprintf(resultadob, "-----------------------------\n");
+        fprintf(resultadob, "Ordenção em disco usando Selection Sort\n");
+        fprintf(resultadob, "Tempo de execucao: %f segundos\n", tempo_execucao);
+        fprintf(resultadob, "Tamanho da base: %d\n", tamanho_total_cliente(out));
+        fprintf(resultadob, "-----------------------------\n\n\n");
+
+        fclose(resultadob);
+
         menuInicialCliente(out);
         break;
 
@@ -771,17 +876,17 @@ void menuOrdenarClienteDisco(FILE *out)
 void insertion_sort_disco_cliente(FILE *arq)
 {
     int tam = tamanho_total_cliente(arq);
-    int i, cont=0;
+    int i, cont = 0;
     //faz o insertion sort
     for (int j = 2; j <= tam; j++)
     {
         //posiciona o arquivo no registro j
-        fseek(arq, (j-1) * tamanho(), SEEK_SET);
+        fseek(arq, (j - 1) * tamanho(), SEEK_SET);
         Tclien *fj = ler(arq);
         //printf("\n********* Cliente atual: %d\n", fj->cod);
         i = j - 1;
         //posiciona o cursor no registro i
-        fseek(arq, (i-1) * tamanho(), SEEK_SET);
+        fseek(arq, (i - 1) * tamanho(), SEEK_SET);
         Tclien *fi = ler(arq);
         //printf("fi = %d\n", fi->cod);
         while ((i > 0) && (fi->cod > fj->cod))
@@ -792,20 +897,22 @@ void insertion_sort_disco_cliente(FILE *arq)
             salva_cliente(fi, arq);
             i = i - 1;
             //lÃª registro i
-            fseek(arq, (i-1) * tamanho(), SEEK_SET);
+            fseek(arq, (i - 1) * tamanho(), SEEK_SET);
             fi = ler(arq);
             //printf("fi = %d; i = %d\n", fi->cod, i);
             cont++;
         }
         //posiciona cursor no registro i + 1
-        fseek(arq, (i) * tamanho(), SEEK_SET);
+        fseek(arq, (i)*tamanho(), SEEK_SET);
         //printf("*** salva_cliente cliente %d na posicao %d\n", fj->cod, i+1);
         //salva_cliente registro j na posiÃ§Ã£o i
         salva_cliente(fj, arq);
-        if (fi != NULL) {
+        if (fi != NULL)
+        {
             free(fi);
         }
-        if (fj != NULL) {
+        if (fj != NULL)
+        {
             free(fj);
         }
     }
@@ -823,14 +930,14 @@ void selection_sort_disco_cliente(FILE *arq)
     for (i = 1; i < tam; i++)
     {
         //posiciona o arquivo no registro i
-        fseek(arq, (i-1) * tamanho(), SEEK_SET);
+        fseek(arq, (i - 1) * tamanho(), SEEK_SET);
         Tclien *fi = ler(arq);
         //printf("\n********* cliente atual: %d\n", fi->cod);
         min = i;
-        for (j = i+1; j <= tam; j++)
+        for (j = i + 1; j <= tam; j++)
         {
             //posiciona o arquivo no registro j
-            fseek(arq, (j-1) * tamanho(), SEEK_SET);
+            fseek(arq, (j - 1) * tamanho(), SEEK_SET);
             Tclien *fj = ler(arq);
             //printf("fj = %d\n", fj->cod);
             if (fj->cod < fi->cod)
@@ -838,16 +945,16 @@ void selection_sort_disco_cliente(FILE *arq)
                 min = j;
                 //printf("min = %d\n", min);
                 //posiciona o arquivo no registro min
-                fseek(arq, (min-1) * tamanho(), SEEK_SET);
+                fseek(arq, (min - 1) * tamanho(), SEEK_SET);
                 Tclien *fmin = ler(arq);
                 //printf("fmin = %d\n", fmin->cod);
                 //troca os registros
-                fseek(arq, (i-1) * tamanho(), SEEK_SET);
+                fseek(arq, (i - 1) * tamanho(), SEEK_SET);
                 salva_cliente(fmin, arq);
-                fseek(arq, (min-1) * tamanho(), SEEK_SET);
+                fseek(arq, (min - 1) * tamanho(), SEEK_SET);
                 salva_cliente(fi, arq);
                 //posiciona o arquivo no registro i
-                fseek(arq, (i-1) * tamanho(), SEEK_SET);
+                fseek(arq, (i - 1) * tamanho(), SEEK_SET);
                 fi = ler(arq);
                 //printf("fi = %d\n", fi->cod);
                 cont++;
