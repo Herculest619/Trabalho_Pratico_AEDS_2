@@ -8,8 +8,19 @@
 #include <string.h>
 #include <time.h>
 
+
 void menuInicialCliente(FILE *clien)
 {
+    //testar se a partição 0 existe, caso exista ir para o menuHashCliente
+    FILE *particao;
+    char nomeArquivo[20];
+    sprintf(nomeArquivo, "hashTablePartition0.dat");
+    if ((particao = fopen(nomeArquivo, "r+b")) != NULL)
+    {
+        fclose(particao);
+        menuHashCliente(clien);
+    }
+
     int opcao;
     printf("**********************************************\n");
     printf("----MENU CLIENTE----\n");
@@ -18,6 +29,7 @@ void menuInicialCliente(FILE *clien)
     printf("3: BUSCA\n");
     printf("4: ORDENAR BASE\n");
     printf("5: EXCLUIR BASE\n");
+    printf("6: TRASFORMAR EM TABELA HASH\n");
     printf("9: VOLTAR\n");
     printf("0: EXIT\n");
     printf("**********************************************\n\n");
@@ -69,9 +81,19 @@ void menuInicialCliente(FILE *clien)
         menuInicialCliente(clien);
         break;
 
+    case 6:
+        system("cls");
+        hashTable(clien);
+        break;
+
     case 9:
         system("cls");
         main();
+        break;
+
+    case 0:
+        system("cls");
+        printf("EXIT\n");
         break;
     }
 }
@@ -174,7 +196,6 @@ void criarBaseClientesDesordenada(FILE *clien)
     printf("\nDigite a quantidade de clientes a serem inseridos desordenados: ");
     scanf("%d", &n);
     printf("\nInserindo %d clientes no arquivo...\n", n);
-    printf("\nCONCLUIDO\n");
 
     int *indices = (int *)malloc(n * sizeof(int));
     for (int i = 0; i < n; i++)
@@ -197,6 +218,7 @@ void criarBaseClientesDesordenada(FILE *clien)
     }
 
     free(indices);
+    printf("\nCONCLUIDO\n");
 }
 
 void salva_cliente(Tclien *clien, FILE *clien_file)
@@ -314,9 +336,10 @@ void menuBuscaCliente(FILE *out)
         //salvar o tempo de execução em um arquivo txt
 
         FILE *resultado;
-        resultado = fopen("resultados.txt", "a");
+        resultado = fopen("resultados_tempo.txt", "a");
 
-        if (resultado == NULL) {
+        if (resultado == NULL)
+        {
             printf("Erro ao abrir o arquivo.\n");
             menuInicialCliente(out);
             break;
@@ -361,7 +384,7 @@ void menuBuscaCliente(FILE *out)
         //salvar o tempo de execução em um arquivo txt
 
         FILE *resultado1;
-        resultado1 = fopen("resultados.txt", "a");
+        resultado1 = fopen("resultados_tempo.txt", "a");
 
         if (resultado1 == NULL)
         {
@@ -477,9 +500,12 @@ void menuOrdenarCliente(FILE *out)
 
     case 2:
 
-        system("cls");
-
-        criar_particoes_clien(out);
+        //system("cls");
+        printf("\nteste\n");
+        //selececao_por_substituicao_cliente(out);
+        int qnt_part = substituicao_com_selecao(out, "particao_");
+        intercalacao_otima_clien(out, qnt_part+1, "particao_");
+        printf("\nteste2\n");
 
         menuInicialCliente(out);
         break;
@@ -495,259 +521,538 @@ void menuOrdenarCliente(FILE *out)
     }
 }
 
-void criar_particoes_clien(FILE *arq)
-{
-    int tam = tamanho_total_cliente(arq);
-    float tam_part;
-    int qnt_part;
+int allVetFrozen (int vet[], int M ) {
 
-    printf("\nDigite o tamanho de particoes (MAX = %d): ", tam);
-    scanf("%f", &tam_part);
+    int cont = 0;
 
-    if (tam_part > tam)
-    {
-        printf("\nNao e possivel criar uma particao maior que o tamanho total da base.\n\n");
-        criar_particoes_clien(arq);
-    }
-    else if (tam_part <= 0)
-    {
-        printf("\nNao e possivel criar uma particao com o tamanho igual ou menor a 0.\n\n");
-        criar_particoes_clien(arq);
-    }
-
-    qnt_part = (int)ceil(tam / tam_part);
-
-    printf("\nQuantidade de particoes: %d\n", qnt_part);
-
-    // Array para armazenar temporariamente os registros da partição em RAM
-    Tclien *particao_temp = malloc(sizeof(Tclien) * tam_part);
-
-    printf("\n------CRIANDO PARTICOES ORDENADAS------\n");
-
-    int opcao = 0;
-    printf("\nDeseja imprimir as particoes ordenadas?\nDigite 1 para SIM ou 0 para NAO: ");
-    scanf("%d", &opcao);
-
-    clock_t start, end;
-    double cpu_time_used;
-
-    start = clock();
-
-    for (int i = 1; i <= qnt_part; i++)
-    {
-        //declara ponteiro para arquivo
-        FILE *particao;
-        //abre arquivo
-        char nome_arq[16];
-        sprintf(nome_arq, "particao-%02d.dat", i);
-
-
-        if ((particao = fopen(nome_arq, "w+b")) == NULL)
-        {
-            printf("Erro ao abrir arquivo\n");
-            exit(1);
-        }
-        else
-        {
-            // Cálculo do início e fim da partição
-            int inicio = (i - 1) * tam_part;
-            int fim = inicio + tam_part;
-
-            // Verificação para evitar que o fim ultrapasse o tamanho total do arquivo
-            if (fim > tam)
-            {
-                fim = tam;
-            }
-
-            // Leitura dos registros do arquivo original e escrita na partição
-            fseek(arq, inicio * sizeof(Tclien), SEEK_SET);
-            fread(particao_temp, sizeof(Tclien), fim - inicio, arq);
-
-            // Ordenação da partição em RAM usando a Seleção por substituição
-            selececao_por_substituicao_clien(particao_temp, fim - inicio);
-
-            fwrite(particao_temp, sizeof(Tclien), fim - inicio, particao);
-
-            if (opcao != 0)
-            {
-                printf("\n\n\n-+-+-+-+-+-+-+-+- PARTICAO %d -+-+-+-+-+-+-+-+-", i);
-                le_cliente(particao);
-            }
-
-            // Fechamento do arquivo da partição
-            fclose(particao);
+    for (int i = 0; i < M; ++i) {
+        if (vet[i] == 1) {
+            cont++;
         }
     }
-    free(particao_temp);
 
-    end = clock();
-
-    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
-    //printf("\nTempo de execucao: %f segundos\n", cpu_time_used);
-
-    printf("\n-----INTERCALANDO PARTICOES COM INTERCALACAO OTIMA-----\n");
-    intercalacao_otima_clien(arq, qnt_part, "clientes_ordenados.dat", cpu_time_used);
-}
-
-void selececao_por_substituicao_clien(Tclien *arr, int size)
-{
-    int i, j, min_idx;
-    for (i = 0; i < size - 1; i++)
-    {
-        min_idx = i;
-        for (j = i + 1; j < size; j++)
-        {
-            if (arr[j].cod < arr[min_idx].cod)
-            {
-                min_idx = j;
-            }
-        }
-        if (min_idx != i)
-        {
-            Tclien temp = arr[i];
-            arr[i] = arr[min_idx];
-            arr[min_idx] = temp;
-        }
+    if (cont == M) {
+        return 1;
+    } else {
+        return 0;
     }
 }
 
-void intercalacao_otima_clien(FILE *arq, int qnt_part, const char *nome_base, float time_used)
+void printPartitionEmployeeID(FILE *file, char nome_particao[])
 {
-    clock_t start, end;
-    double cpu_time_used;
 
-    start = clock();
+    printf("\nParticao %s:  ", nome_particao);
 
-    // Abre o arquivo de saída para a intercalação final
-    FILE *saida;
-    if ((saida = fopen(nome_base, "w+b")) == NULL)
+    for (int i = 0; i < sizeFile(file, 0); ++i)
     {
-        printf("Erro ao abrir arquivo de saida\n");
-        exit(1);
+
+        fseek(file, i * sizeof(Tclien), SEEK_SET);
+        Tclien *aux = ler_registro_Tclien(file);
+
+        printf(" %i ", aux->cod);
     }
 
-    // Abre os arquivos das partições para leitura e intercalação
-    FILE **particoes = malloc(sizeof(FILE *) * qnt_part);
-    for (int i = 0; i < qnt_part; i++)
+    printf("\n");
+}
+
+Tclien *ler_registro_Tclien(FILE *in)
+{
+    /*
+    typedef struct {
+        int cod;
+        char nome[50];
+        char cpf[15];
+        char data_nascimento[11];
+        double mensalidade;
+    } Tclien;
+    */
+
+    Tclien *clien = (Tclien *)malloc(sizeof(Tclien));
+
+    if (0 >= fread(&clien->cod, sizeof(int), 1, in))
     {
-        char nome_particao[16];
-        sprintf(nome_particao, "particao-%02d.dat", i + 1);
+        free(clien);
+        return NULL;
+    }
 
-        //printf("\n%d", i+1);
+    fread(clien->nome, sizeof(char), sizeof(clien->nome), in);
+    fread(clien->cpf, sizeof(char), sizeof(clien->cpf), in);
+    fread(clien->data_nascimento, sizeof(char), sizeof(clien->data_nascimento), in);
+    fread(&clien->mensalidade, sizeof(double), 1, in);
 
-        if ((particoes[i] = fopen(nome_particao, "rb")) == NULL)
-        {
-            printf("Erro ao abrir arquivo de particao %d\n", i + 1);
-            exit(1);
+    return clien;
+}
+
+int tamanho_cliente_bytes()
+{
+    return sizeof(int)         //cod
+           + sizeof(char) * 50 //nome
+           + sizeof(char) * 15 //cpf
+           + sizeof(char) * 11 //data_nascimento
+           + sizeof(double);   //mensalidade
+}
+
+void saveRegisterEmployee(Tclien *employee, FILE *file)
+{
+    fwrite(&(employee->cod), sizeof(int), 1, file);
+    fwrite(employee->nome, sizeof(char), sizeof(employee->nome), file);
+    fwrite(employee->cpf, sizeof(char), sizeof(employee->cpf), file);
+    fwrite(employee->data_nascimento, sizeof(char), sizeof(employee->data_nascimento), file);
+    fwrite(&(employee->mensalidade), sizeof(double), 1, file);
+}
+
+int sizeFile(FILE *file, int contSizeFile) {
+
+    int bytesAUX = 0;
+
+    while(!feof(file)) {
+
+        fseek(file, bytesAUX * sizeof(Tclien), SEEK_SET);
+
+        Tclien *aux = ler_registro_Tclien(file);
+        if(aux != NULL) {
+            contSizeFile++;
         }
-        //printf("\nteste\n");
-        //puts(nome_particao);
-        //fclose(nome_particao);
+
+        bytesAUX++;
     }
 
-    // Array para armazenar temporariamente o próximo registro de cada partição
-    Tclien *registro_atual = malloc(sizeof(Tclien) * qnt_part);
+    return contSizeFile;
+}
 
-    // Leitura inicial do primeiro registro de cada partição
-    for (int i = 0; i < qnt_part; i++)
+int substituicao_com_selecao(FILE *file, char nome_arq_particao[])
+{
+    //int M = (int)ceil(sqrt(tamanho_total_cliente(file)));
+    int M =6;
+    int posicao = M;
+
+    int num_particao = 0, contSizeFile = 0, menor_elementoposicao = 0, menor_elemento = 999999, sizeFileAux = 0;
+
+    Tclien *clientes = (Tclien *)malloc(sizeof(Tclien) * M);
+
+    int *vetor_aux_clien = (int *)calloc(M, sizeof(int));
+
+    rewind(file);
+
+    /*
+    if (file == NULL) {
+        printf("Erro ao abrir o arquivo.\n");
+        return -1;
+    }*/
+
+    sizeFileAux = sizeFile(file, contSizeFile);
+
+    printf("\nRealizando selecao por substituicao...");
+
+    for (int i = 0; i < M; ++i)
     {
-        if (fread(&registro_atual[i], sizeof(Tclien), 1, particoes[i]) != 1)
-        {
-            // Se a partição estiver vazia, coloca um valor máximo no registro para evitar problemas
-            registro_atual[i].cod = INT_MAX;
-        }
+        fseek(file, i * sizeof(Tclien), SEEK_SET);
+
+        Tclien *aux = ler_registro_Tclien(file);
+        clientes[i] = *aux;
     }
 
-    // Intercalação dos registros até que todas as partições estejam vazias
-    while (1)
+    for (int i = 0; i < M; ++i)
     {
-        // Encontra o menor registro atual dentre todas as partições
-        int menor_indice = -1;
-        for (int i = 0; i < qnt_part; i++)
+        vetor_aux_clien[i] = clientes[i].cod;
+    }
+
+    while (posicao != sizeFileAux)
+    {
+        char nome_particao[100];
+        char str1[100];
+        char str2[100] = ".dat";
+
+        itoa(num_particao, str1, 10);
+        strcat(strcpy(nome_particao, nome_arq_particao), str1);
+        strcat(strcpy(nome_particao, nome_particao), str2);
+
+        FILE *filePartition = fopen(nome_particao, "wb+");
+
+        int *vetor_congelado_aux = (int *)calloc(M, sizeof(int));
+
+        while (posicao != sizeFileAux) // Adicionei a verificação para verificar se a partição atual já foi completamente preenchida
         {
-            if (registro_atual[i].cod != INT_MAX &&
-                (menor_indice == -1 || registro_atual[i].cod < registro_atual[menor_indice].cod))
+            menor_elemento = 9999999;
+
+            for (int i = 0; i < M; ++i)
             {
-                menor_indice = i;
+                if (menor_elemento > vetor_aux_clien[i] && vetor_congelado_aux[i] != 1)
+                {
+                    menor_elemento = vetor_aux_clien[i];
+                    menor_elementoposicao = i;
+                }
+            }
+
+            saveRegisterEmployee(&clientes[menor_elementoposicao], filePartition);
+
+            fseek(file, posicao * sizeof(Tclien), SEEK_SET);
+
+            Tclien *aux = ler_registro_Tclien(file);
+            /*
+            if (aux == NULL) {
+                printf("Erro ao ler registro do arquivo.\n");
+                return -1;
+            }*/
+
+            posicao++;
+
+            vetor_aux_clien[menor_elementoposicao] = aux->cod;
+            clientes[menor_elementoposicao] = *aux;
+
+            if (aux->cod < menor_elemento)
+            {
+                vetor_congelado_aux[menor_elementoposicao] = 1;
+            }
+
+            if(allVetFrozen(vetor_congelado_aux, M) == 1) {
+                num_particao++;
+                break;
             }
         }
 
-        // Se todas as partições estão vazias, a intercalação está completa
-        if (menor_indice == -1)
+        fclose(filePartition);
+
+        if (posicao >= sizeFileAux)
         {
             break;
         }
+    }
 
-        // Escreve o menor registro no arquivo de saída
-        fwrite(&registro_atual[menor_indice], sizeof(Tclien), 1, saida);
+    char nome_particao[100];
+    char str1[100];
+    char str2[100] = ".dat";
 
-        // Lê o próximo registro da partição que tinha o menor registro
-        if (fread(&registro_atual[menor_indice], sizeof(Tclien), 1, particoes[menor_indice]) != 1)
+    itoa(num_particao, str1, 10);
+    strcat(strcpy(nome_particao, nome_arq_particao), str1);
+    strcat(strcpy(nome_particao, nome_particao), str2);
+
+    FILE *filePartitionFinal = fopen(nome_particao, "ab+");
+
+    Tclien ClienAux;
+
+    // Ordena os registros da partição
+    for (int k = 1; k < M; k++)
+    {
+
+        for (int j = 0; j < M-k; j++)
         {
-            // Se a partição estiver vazia, coloca um valor máximo no registro para evitar problemas
-            registro_atual[menor_indice].cod = INT_MAX;
+
+            if (clientes[j].cod > clientes[j + 1].cod)
+            {
+                ClienAux = clientes[j];
+                clientes[j] = clientes[j + 1];
+                clientes[j + 1] = ClienAux;
+            }
         }
     }
 
-    end = clock();
+    rewind(filePartitionFinal);
 
-    printf("\nDeseja imprimir as base completa ordenada?\nDigite 1 para SIM ou 0 para NAO: ");
-    int opcao;
-    scanf("%d", &opcao);
-
-    if (opcao != 0)
+    // Salva os registros ordenados no arquivo da partição
+    for (int i = 0; i < M; ++i)
     {
-        printf("\n\n\n-+-+-+-+-+-+-+-+-+-+- BASE ORDENADA -+-+-+-+-+-+-+-+-+-+-");
-        le_cliente(saida);
+        saveRegisterEmployee(&clientes[i], filePartitionFinal);
     }
 
-    printf("\nBASE ATUALIZADA PARA SUA VERSAO ORDENADA!\n");
+    fclose(filePartitionFinal);
 
-    printf("\nLIBERANDO MEMORIA...\n");
-    // Fecha os arquivos das partições e o arquivo de saída
-    for (int i = 0; i < qnt_part; i++)
+
+    //vamos abrir a ultima partição e ordenar ela
+    char nome_particao2[100];
+    char str3[100];
+    char str4[100] = ".dat";
+
+    itoa(num_particao, str3, 10);
+    strcat(strcpy(nome_particao2, nome_arq_particao), str3);
+    strcat(strcpy(nome_particao2, nome_particao2), str4);
+
+    FILE *filePartitionFinal2 = fopen(nome_particao2, "rb+");
+
+    //quantidade de elementos na partição
+    int sizeFileAux2 = sizeFile(filePartitionFinal2, contSizeFile);
+    printf("\nsizeFileAux2: %d\n", sizeFileAux2);
+
+
+    Tclien *clientes2 = (Tclien *)malloc(sizeof(Tclien) * sizeFileAux2);
+
+    // Lê os registros da partição
+    for (int i = 0; i < sizeFileAux2; ++i)
     {
-        fclose(particoes[i]);
-        //remover os arquivo de partições
-        char nome_particao[20];
-        sprintf(nome_particao, "particao-%02d.dat", i + 1);
-        remove(nome_particao);
+        fseek(filePartitionFinal2, i * sizeof(Tclien), SEEK_SET);
+
+        Tclien *aux = ler_registro_Tclien(filePartitionFinal2);
+        clientes2[i] = *aux;
     }
 
-    // Libera a memória alocada
-    fclose(saida);
+    Tclien ClienAux2;
 
-    // Copia o conteúdo do arquivo ordenado para o arquivo original
-    copiar_arquivo_clien(arq, "clientes_ordenados.dat");
-
-    remove("clientes_ordenados.dat");
-    free(particoes);
-    free(registro_atual);
-
-    cpu_time_used = ((double)(end - start)) / CLOCKS_PER_SEC;
-    printf("\nTempo de execucao: %f segundos\n\n\n", cpu_time_used + time_used);
-
-    //salvar o tempo de execução em um arquivo txt
-
-    FILE *resultado;
-    resultado = fopen("resultados.txt", "a");
-
-    if (resultado == NULL)
+    // Ordena os registros da partição
+    for (int k = 0; k < sizeFileAux2 -1; k++)
     {
-        printf("Erro ao abrir o arquivo.\n");
-        menuInicialCliente(arq);
-        //break;
+
+        for (int j = 0; j < sizeFileAux2-1-k; j++)
+        {
+
+            if (clientes2[j].cod > clientes2[j + 1].cod)
+            {
+                ClienAux2 = clientes2[j];
+                clientes2[j] = clientes2[j + 1];
+                clientes2[j + 1] = ClienAux2;
+            }
+        }
     }
 
-    fprintf(resultado, "-----------------------------\n");
-    fprintf(resultado, "Ordenação com Particionamento e Intercalação Otima\n");
-    fprintf(resultado, "Tempo de execucao: %f segundos\n", cpu_time_used + time_used);
-    fprintf(resultado, "Tamanho da base: %d\n", tamanho_total_cliente(arq));
-    fprintf(resultado, "Tamanho da particao: %d\n", tamanho_total_cliente(arq) / qnt_part);
-    fprintf(resultado, "Quantidade de particoes: %d\n", qnt_part);
-    fprintf(resultado, "-----------------------------\n\n\n");
+/*
+    for (int k = 0; k < sizeFileAux2; k++)
+    {
+        printf("\nteste");
+        printf("\n%d\n", clientes2[k].cod);
+    }*/
 
-    fclose(resultado);
+    rewind(filePartitionFinal2);
+    // Salva os registros ordenados no arquivo da partição
+    for (int i = 0; i < sizeFileAux2; i++)
+    {
+        saveRegisterEmployee(&clientes2[i], filePartitionFinal2);
+    }
+
+    fclose(filePartitionFinal2);
+
+
+
+
+    // Imprime o conteúdo de cada partição
+    for (int i = 0; i <= num_particao; ++i)
+    {
+        //printf("\n---%d\n", num_particao);
+
+        itoa(i, str1, 10);
+        strcat(strcpy(nome_particao, nome_arq_particao), str1);
+        strcat(strcpy(nome_particao, nome_particao), str2);
+
+        FILE *filePartition = fopen(nome_particao, "rb+"); // Abre o arquivo da partição para leitura e escrita
+
+        //printf("\nteste %s", nome_particao);
+
+        printPartitionEmployeeID(filePartition, nome_particao);
+
+        fclose(filePartition);
+    }
+
+    free(vetor_aux_clien);
+    free(clientes);
+    free(clientes2);
+
+    //printf("\n%d\n", num_particao);
+    return num_particao;
+}
+
+void intercalacao_otima_clien(FILE *arq, int qnt_part, char nome_base[]) {
+    FILE **partFiles = (FILE **)malloc(sizeof(FILE *) * qnt_part);
+
+    for (int i = 0; i < qnt_part; i++) {
+        char partitionFileName[100];
+        snprintf(partitionFileName, sizeof(partitionFileName), "%s%d.dat", nome_base, i);
+        partFiles[i] = fopen(partitionFileName, "rb");
+    }
+
+    /*
+    //imprimir as partições a partir do partFiles
+    for(int i = 0; i < qnt_part; i++) {
+        printf("\nParticao %d\n", i);
+
+        Tclien registro;
+        while (fread(&registro, sizeof(Tclien), 1, partFiles[i]) == 1) {
+            printf("\n%d\n", registro.cod);
+        }
+
+        rewind(partFiles[i]);
+    }
+    */
+
+    int currentPartitions = qnt_part; // Quantidade de partições que ainda não foram intercaladas
+
+    int x=1;
+    while (currentPartitions > 1) {
+        FILE *mergedFile = tmpfile(); // Cria um arquivo temporário para a intercalação
+
+        printf("\n\n\nteste intercalacao while %d\n", x);
+
+        // Encontra as duas menores partições para intercalar
+        int Part1 = currentPartitions - 1;
+        int Part2 = currentPartitions - 2;
+
+        /*for (int i = 0; i < currentPartitions; i++) {
+            if (partFiles[i] != NULL) {
+                if (Part1 == -1 || Part2 == -1) {
+                    if (Part1 == -1) {
+                        Part1 = i;
+                    } else {
+                        Part2 = i;
+                    }
+                } else {
+                    if (comparaRegistros(partFiles[i], partFiles[Part1]) < 0) {
+                        Part2 = Part1;
+                        Part1 = i;
+                    } else if (comparaRegistros(partFiles[i], partFiles[Part2]) < 0) {
+                        Part2 = i;
+                    }
+                }
+            }
+        }*/
+
+        //printf("\npassou do for\n");
+        printf("\nPart1: %d\n", Part1);
+        printf("\nPart2: %d\n", Part2);
+
+
+        // Intercale as duas partições
+        intercalarDuasParticoes(partFiles[Part1], partFiles[Part2], mergedFile);
+
+        printf("\npassou da intercalacao\n");
+
+        // Feche os arquivos das partições intercaladas
+        fclose(partFiles[Part1]);
+        fclose(partFiles[Part2]);
+
+        // Atualize o array de arquivos de partições com o arquivo temporário intercalado
+        partFiles[Part2] = mergedFile;
+
+
+
+        // Atualiza o array de arquivos de partições com o arquivo temporário que está com a intercalação
+        //copiarRegistros(mergedFile, partFiles[Part2]);
+
+        //partFiles[Part2] = mergedFile;
+
+        //impirmir a partição intercalada
+        rewind(partFiles[Part2]);
+        Tclien registro;
+        printf("\nParticao intercalada dentro da funcao intercalacao_otima_clien\n");
+        while (fread(&registro, sizeof(Tclien), 1, partFiles[Part2]) == 1) {
+            printf("%d\n", registro.cod);
+        }
+
+        //partFiles[Part2] = partFiles[currentPartitions - 1];
+
+        // Fecha os arquivos das partições intercaladas
+        //fclose(partFiles[Part1]);
+        //fclose(partFiles[Part2]);
+        //fclose(mergedFile);
+
+        // Redefina o arquivo temporário mergedFile
+        mergedFile = tmpfile();
+        rewind(partFiles[Part1]);
+        rewind(partFiles[Part2]);
+
+
+        currentPartitions--;
+        x++;
+    }
+    printf("\nteste intercalacao 3\n");
+
+    // O último arquivo restante contém a saída final ordenada
+
+    // Copia os registros do arquivo final ordenado para o arquivo original
+    rewind(partFiles[0]);
+    copiarRegistros(partFiles[0], arq);
+
+
+    // Imprime o arquivo todo ordenado
+    rewind(arq);
+    Tclien registro;
+    printf("\nArquivo Ordenado:\n");
+
+    while (fread(&registro, sizeof(Tclien), 1, arq) == 1) {
+        printf("%d\n", registro.cod);
+    }
+
+
+    for (int i = 0; i < qnt_part; ++i) {
+        fclose(partFiles[i]);
+    }
+
+    free(partFiles);
+    printf("\nacabou a intercalacao");
+}
+
+// Função para comparar dois registros
+int comparaRegistros(const void *a, const void *b) {
+    const Tclien *registro1 = (const Tclien *)a;
+    const Tclien *registro2 = (const Tclien *)b;
+
+    if (registro1->cod < registro2->cod) {
+        return -1;
+    } else if (registro1->cod > registro2->cod) {
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+// Função para intercalar duas partições
+void intercalarDuasParticoes(FILE *part1, FILE *part2, FILE *mergedFile) {
+    Tclien registro1, registro2;
+
+    // Leia o primeiro registro de cada partição
+    if (fread(&registro1, sizeof(Tclien), 1, part1) != 1) {
+        printf("\nA primeira particao está vazia, então apenas escreva os registros da segunda");
+        return; // A partição está vazia
+    }
+    if (fread(&registro2, sizeof(Tclien), 1, part2) != 1) {
+        // A segunda partição está vazia, então apenas escreva os registros da primeira
+        printf("\nA segunda particao está vazia, então apenas escreva os registros da primeira");
+        fwrite(&registro1, sizeof(Tclien), 1, mergedFile);
+        while (fread(&registro1, sizeof(Tclien), 1, part1) == 1) {
+            fwrite(&registro1, sizeof(Tclien), 1, mergedFile);
+        }
+        return;
+    }
+
+    while (1) {
+        if (comparaRegistros(&registro1, &registro2) <= 0) {
+            fwrite(&registro1, sizeof(Tclien), 1, mergedFile);
+            if (fread(&registro1, sizeof(Tclien), 1, part1) != 1) {
+                break;
+            }
+        } else {
+            fwrite(&registro2, sizeof(Tclien), 1, mergedFile);
+            if (fread(&registro2, sizeof(Tclien), 1, part2) != 1) {
+                break;
+            }
+        }
+    }
+
+    // Escreva os registros restantes de part1, se houver
+    while (fread(&registro1, sizeof(Tclien), 1, part1) == 1) {
+        fwrite(&registro1, sizeof(Tclien), 1, mergedFile);
+    }
+
+    // Escreva os registros restantes de part2, se houver
+    while (fread(&registro2, sizeof(Tclien), 1, part2) == 1) {
+        fwrite(&registro2, sizeof(Tclien), 1, mergedFile);
+    }
+
+    //imprime o arquivo ordenado
+    rewind(mergedFile);
+    Tclien registro;
+    printf("\n\n\nProcesso de intercalacao dentro da funcao intercalarDuasParticoes\n");
+
+    while (fread(&registro, sizeof(Tclien), 1, mergedFile) == 1) {
+        printf("%d\n", registro.cod);
+    }
+    rewind(mergedFile);
+}
+
+// Função para copiar registros de um arquivo para outro
+void copiarRegistros(FILE *origem, FILE *destino) {
+    Tclien registro;
+
+    while (fread(&registro, sizeof(Tclien), 1, origem) == 1)
+    {
+        fwrite(&registro, sizeof(Tclien), 1, destino);
+    }
 }
 
 void copiar_arquivo_clien(FILE *arq_destino, const char *nome_arquivo_origem)
@@ -811,9 +1116,10 @@ void menuOrdenarClienteDisco(FILE *out)
 
         //salvar o tempo de execução em um arquivo txt
         FILE *resultado;
-        resultado = fopen("resultados.txt", "a");
+        resultado = fopen("resultados_tempo.txt", "a");
 
-        if (resultado == NULL) {
+        if (resultado == NULL)
+        {
             printf("Erro ao abrir o arquivo.\n");
             menuInicialCliente(out);
             break;
@@ -843,9 +1149,10 @@ void menuOrdenarClienteDisco(FILE *out)
 
         //salvar o tempo de execução em um arquivo txt
         FILE *resultadob;
-        resultadob = fopen("resultados.txt", "a");
+        resultadob = fopen("resultados_tempo.txt", "a");
 
-        if (resultadob == NULL) {
+        if (resultadob == NULL)
+        {
             printf("Erro ao abrir o arquivo.\n");
             menuInicialCliente(out);
             break;
@@ -965,4 +1272,388 @@ void selection_sort_disco_cliente(FILE *arq)
         free(fi);
     }
     printf("\nTotal de iteracoes: %d\n", cont);
+}
+
+void menuHashCliente(){
+
+    int opcao;
+    printf("\n*************************************************\n");
+    printf("******** METODO DA DIVISAO - (Cod mod M) ********\n");
+    printf("************* ENCADEAMENTO EXTERIOR *************\n");
+    printf("** CADA ARQUIVO SE COMPORTA COMO A TABELA BASE **\n\n");
+    printf("----MENU HASH----\n");
+    printf("1: INSERIR EM MASSA\n");
+    printf("2: BUSCAR\n");
+    printf("3: REMOVER UM REGISTRO\n");
+    printf("4: REMOVER TODOS OS REGISTROS\n");
+    printf("5: IMPRIMIR\n");
+    printf("0: EXIT\n");
+    printf("*************************************************\n\n");
+    printf("DIGITE A OPCAO DESEJADA: ");
+
+    scanf("%d", &opcao);
+    switch (opcao)
+    {
+    case 1:
+        system("cls");
+        criarBaseClientesDesordenadaHash();
+        break;
+
+    case 2:
+        system("cls");
+        menuBuscarEmHashCliente();
+        break;
+
+    case 3:
+        system("cls");
+        //menuRemoverEmHashCliente();
+        break;
+
+    case 4:
+        system("cls");
+        //menuRemoverTodosEmHashCliente();
+        break;
+
+    case 5:
+        system("cls");
+        imprimirEmHashCliente();
+        break;
+
+    case 0:
+        system("cls");
+        printf("\n-----EXIT-----\n");
+        exit(0);
+
+    default:
+        system("cls");
+        printf("\n-----OPCAO INVALIDA-----\n");
+        break;
+    }
+}
+
+void criarBaseClientesDesordenadaHash()
+{
+    // abre o arquivo de particoes
+    FILE *filePartition;
+
+    // abre o arquivo que contem o ultimo codigo de funcionario
+    FILE *fileLastCode = fopen("lastCode.dat", "rb+");
+
+    // le o ultimo codigo de funcionario
+    int lastCode;
+    fread(&lastCode, sizeof(int), 1, fileLastCode);
+    printf("lastCode inicio = %d\n", lastCode);
+    int aux = lastCode;
+
+    int n;
+    printf("\nDigite a quantidade de clientes a serem inseridos desordenados na HASH: ");
+    scanf("%d", &n);
+
+    if(n <= 0){
+        printf("\nQuantidade invalida!\n\n");
+        criarBaseClientesDesordenadaHash();
+    }
+
+    //ler do arquivo "numberOfPartition.dat" o numero de particoes
+    int numberOfPartition;
+    FILE *fileNumberOfPartition = fopen("numberOfPartition.dat", "rb"); // Abre o arquivo em modo de leitura binária
+
+    if (fileNumberOfPartition == NULL) {
+        numberOfPartition = sqrt(n);
+    } else {
+        fread(&numberOfPartition, sizeof(int), 1, fileNumberOfPartition);
+        fclose(fileNumberOfPartition); // Fecha o arquivo após a leitura
+    }
+
+    printf("\nInserindo %d clientes nos arquivos HASH...\n", n);
+
+    int *indices = (int *)malloc(n * sizeof(int));
+    for (int i = 0; i < n; i++)
+    {
+        indices[i] = aux + i + 1;
+        //printf("indices[%d] = %d\n", i, indices[i]);
+    }
+    shuffle(indices, n); //vetor, tamanho
+
+    //printf("\nTeste Shuffle: \n");
+
+    for (int i = 0; i < n; i++)
+    {
+        char cpf[15];
+        gerarCPF(cpf, indices[i]);
+        char data[11];
+        gerarData(data, indices[i]);
+        char nome[MAX_TAM_NOME];
+        gerarNome(nome, indices[i]);
+        Tclien *c1 = cliente(indices[i], nome, cpf, data, gerarMensalidade(i));
+
+        //printf("\nTeste0\n");
+
+        //calcula o nome do arquivo, "hashTablePartition" + i
+        char partitionName[100];
+        char str1[100];
+        char str2[100] = ".dat";
+
+        //printf("\nTesteitoa\n");
+
+        //printf("\nindices[%d] = %d\n", i, indices[i]);
+        //printf("\nnumero de particoes = %d\n", numberOfPartition);
+        //printf("\nresto = %d\n", indices[i] % numberOfPartition);
+
+        itoa(indices[i] % numberOfPartition, str1, 10);
+
+        //printf("\nresto = %d\n", indices[i] % numberOfPartition);
+
+        strcat(strcpy(partitionName, "hashTablePartition"), str1);
+        strcat(strcpy(partitionName, partitionName), str2);
+
+        //printf("\nteste1\n");
+
+        //abre o arquivo de particoes
+        filePartition = fopen(partitionName, "ab+");
+
+        //printf("\nteste2\n");
+
+        //salva o cliente no arquivo de particoes
+        salva_cliente(c1, filePartition);
+
+        //fecha o arquivo de particoes
+        fclose(filePartition);
+
+        free(c1);
+        lastCode++;
+        //printf("\nCliente %d\n", indices[i]);
+    }
+
+    printf("\nNumero de particoes: %d\n", numberOfPartition);
+    printf("\nLastCode final = %d\n", lastCode);
+
+    //salva o ultimo codigo de funcionario
+    fseek(fileLastCode, 0, SEEK_SET);
+    fwrite(&lastCode, sizeof(int), 1, fileLastCode);
+    fclose(fileLastCode);
+
+    free(indices);
+    fclose(filePartition);
+    printf("\nCONCLUIDO\n\n");
+    menuHashCliente();
+}
+
+// converte a base de dados para tabela hash
+void hashTable(FILE *file) {
+
+    int numberOfPartition = 0;
+
+    // variaveis auxiliares
+    int lastCode = 0;
+
+    // calcula o tamanho do arquivo
+    int sizeFile = tamanho_total_cliente(file);
+
+    // calcula o numero de particoes
+    numberOfPartition = sqrt(sizeFile);
+
+    rewind(file); // volta o ponteiro para o inicio do arquivo
+
+    char partitionName[100];
+    char str1[100];
+    char str2[100] = ".dat";
+
+
+    // percorre o arquivo e salva os registros nas particoes
+    for (int i = 0; i < sizeFile; ++i) {
+
+        Tclien *aux = ler_registro_Tclien(file);
+
+        int selectedParticipation = aux->cod % numberOfPartition;
+
+        itoa(selectedParticipation, str1, 10);
+        strcat(strcpy(partitionName, "hashTablePartition"), str1);
+        strcat(strcpy(partitionName, partitionName), str2);
+
+        FILE *filePartition = fopen(partitionName,"ab+");
+
+        saveRegisterEmployee(aux, filePartition);
+
+        fclose(filePartition);
+
+        // armazena o ultimo codigo de cliente
+        if (aux->cod > lastCode){
+            lastCode = aux->cod;
+        }
+
+    }
+
+    // imprime os codigos dos cliente em cada particao
+    for (int i = 0; i < numberOfPartition; ++i) {
+
+        itoa(i, str1, 10);
+        strcat(strcpy(partitionName, "hashTablePartition"), str1);
+        strcat(strcpy(partitionName, partitionName), str2);
+
+        FILE *filePartition = fopen(partitionName,"rb+");
+
+        printPartitionEmployeeID(filePartition, partitionName);
+
+        fclose(filePartition);
+    }
+
+    //armazena o ultimo codigo de funcionario em um arquivo .dat para ser usado na insercao
+    FILE *fileLastCode = fopen("lastCode.dat", "wb+");
+    fwrite(&lastCode, sizeof(int), 1, fileLastCode);
+    fclose(fileLastCode);
+
+    //imprime o ultimo codigo de funcionario do arquivo para teste
+    /*FILE *fileLastCode_ = fopen("lastCode.dat", "rb+");
+    int lastCodeTest;
+    fread(&lastCodeTest, sizeof(int), 1, fileLastCode_);
+    printf("\n\nlastCodeTest: %d\n\n", lastCodeTest);
+    fclose(fileLastCode_);*/
+
+    //armazena o numero de particoes em um arquivo .dat para ser usado na insercao
+    FILE *fileNumberOfPartition = fopen("numberOfPartition.dat", "wb+");
+    fwrite(&numberOfPartition, sizeof(int), 1, fileNumberOfPartition);
+    fclose(fileNumberOfPartition);
+
+    // excluir arquivo original
+    fclose(file);
+    remove("cliente.dat");
+
+    menuHashCliente();
+}
+
+// imprime os clientes em cada particao
+void imprimirEmHashCliente()
+{
+    // abre o arquivo de particoes
+    FILE *filePartition;
+
+    // abre o arquivo que contem o ultimo codigo de funcionario
+    FILE *fileLastCode = fopen("lastCode.dat", "rb+");
+
+    // le o ultimo codigo de funcionario
+    int lastCode;
+    fread(&lastCode, sizeof(int), 1, fileLastCode);
+    printf("lastCode = %d\n", lastCode);
+    int aux = lastCode;
+
+    //ler do arquivo "numberOfPartition.dat" o numero de particoes
+    int numberOfPartition;
+    FILE *fileNumberOfPartition = fopen("numberOfPartition.dat", "rb"); // Abre o arquivo em modo de leitura binária
+
+    if (fileNumberOfPartition == NULL) {
+        printf("Erro ao abrir arquivo de particoes\n");
+        exit(1);
+    } else {
+        fread(&numberOfPartition, sizeof(int), 1, fileNumberOfPartition);
+        fclose(fileNumberOfPartition); // Fecha o arquivo após a leitura
+    }
+
+    printf("\nNumero de particoes: %d\n", numberOfPartition);
+
+    //calcula o nome do arquivo, "hashTablePartition" + i
+    char partitionName[100];
+    char str1[100];
+    char str2[100] = ".dat";
+
+    // imprime os codigos dos cliente em cada particao
+    for (int i = 0; i < numberOfPartition; ++i) {
+
+        itoa(i, str1, 10);
+        strcat(strcpy(partitionName, "hashTablePartition"), str1);
+        strcat(strcpy(partitionName, partitionName), str2);
+
+        FILE *filePartition = fopen(partitionName,"rb+");
+
+        printPartitionEmployeeID(filePartition, partitionName);
+
+        fclose(filePartition);
+    }
+
+    menuHashCliente();
+
+}
+
+void menuBuscarEmHashCliente()
+{
+    // abre o arquivo que contem o ultimo codigo de funcionario
+    FILE *fileLastCode = fopen("lastCode.dat", "rb+");
+
+    // le o ultimo codigo de funcionario
+    int lastCode;
+    fread(&lastCode, sizeof(int), 1, fileLastCode);
+    printf("lastCode = %d\n", lastCode);
+    int aux = lastCode;
+
+    //ler do arquivo "numberOfPartition.dat" o numero de particoes
+    int numberOfPartition;
+    FILE *fileNumberOfPartition = fopen("numberOfPartition.dat", "rb"); // Abre o arquivo em modo de leitura binária
+
+    if (fileNumberOfPartition == NULL) {
+        printf("Erro ao abrir arquivo de particoes\n");
+        exit(1);
+    } else {
+        fread(&numberOfPartition, sizeof(int), 1, fileNumberOfPartition);
+        fclose(fileNumberOfPartition); // Fecha o arquivo após a leitura
+    }
+
+    printf("\nNumero de particoes: %d\n", numberOfPartition);
+
+    //calcula o nome do arquivo, "hashTablePartition" + i
+    char partitionName[100];
+    char str1[100];
+    char str2[100] = ".dat";
+
+    // procura o cliente na particao, cod mod numero de particoes
+    printf("\n\nDigite o codigo do cliente a ser buscado: ");
+    int cod;
+    scanf("%d", &cod);
+
+    if(cod > lastCode){
+        printf("\nCodigo maior que a quantidade de clientes cadastrados\n\n");
+        menuHashCliente();
+    }
+
+    itoa(cod % numberOfPartition, str1, 10);
+    strcat(strcpy(partitionName, "hashTablePartition"), str1);
+    strcat(strcpy(partitionName, partitionName), str2);
+    printf("partitionName = %s\n", partitionName);
+
+    FILE *filePartition = fopen(partitionName,"rb+");
+    fseek(filePartition, sizeof(Tclien), SEEK_SET);
+
+    // calcula o tamanho do arquivo
+    int sizeFile = tamanho_total_cliente(filePartition);
+    printf("sizeFile = %d\n", sizeFile);
+
+    int cont = 1;
+
+    for(int i=0; i<sizeFile; i++){
+
+        fseek(filePartition, i * sizeof(Tclien), SEEK_SET); // posiciona o ponteiro do arquivo na posicao i
+        Tclien *aux = ler_registro_Tclien(filePartition);
+
+        if(aux->cod == cod){
+            printf("\nForam feitas %d comparacoes\n\n\n", cont);
+            imprime_cliente(aux);
+
+            // fecha o arquivo de particoes
+            fclose(filePartition);
+
+            // fecha o arquivo que contem o ultimo codigo de funcionario
+            fclose(fileLastCode);
+
+            menuHashCliente();
+        }
+        cont++;
+    }
+        printf("Cliente nao encontrado\n");
+
+    // fecha o arquivo de particoes
+    fclose(filePartition);
+
+    // fecha o arquivo que contem o ultimo codigo de funcionario
+    fclose(fileLastCode);
+
+    menuHashCliente();
 }

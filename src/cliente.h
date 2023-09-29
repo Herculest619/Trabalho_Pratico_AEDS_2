@@ -59,8 +59,34 @@ void criar_particoes_clien(FILE *arq);
 
 void selececao_por_substituicao_clien(Tclien *arr, int size);
 
-void intercalacao_otima_clien(FILE *arq, int qnt_part, const char *nome_base, float time_used);
+void intercalacao_otima_clien(FILE *arq, int qnt_part, char nome_base[]);
 
 void copiar_arquivo_clien(FILE *arq_destino, const char *nome_arquivo_origem);
+
+int comparar_registros(const void *a, const void *b);
+
+void swap(Tclien *a, Tclien *b);
+
+int substituicao_com_selecao(FILE *file, char nameFilePartition[]);
+
+Tclien *ler_registro_Tclien(FILE *in);
+
+void printPartitionEmployeeID(FILE *file, char partitionName[]);
+
+int allVetFrozen (int vet[], int M);
+
+int sizeFile(FILE *file, int contSizeFile);
+
+void copiarRegistros(FILE *origem, FILE *destino);
+
+void intercalarDuasParticoes(FILE *part1, FILE *part2, FILE *mergedFile);
+
+void selection_with_complete_replacement(FILE *out);
+
+void hashTable(FILE *file);
+
+void menuHashCliente();
+
+void menuInserirEmHashCliente();
 
 #endif // CLIENTE_H

@@ -728,6 +728,11 @@ void criar_particoes_equip(FILE *arq)
 
     printf("\nQuantidade de particoes: %d\n", qnt_part);
 
+    if (qnt_part > 505){
+        printf("\nNao e possivel criar mais de 505 particoes.\n\n");
+        criar_particoes_equip(arq);
+    }
+
     // Array para armazenar temporariamente os registros da partição em RAM
     TEquip *particao_temp = malloc(sizeof(TEquip) * tam_part);
 
